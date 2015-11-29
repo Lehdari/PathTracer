@@ -5,8 +5,14 @@
 #include "MathTypes.hpp"
 
 
+struct Vertex {
+    Vector3f p; //  Position
+    Vector2f t; //  Texture Coordinate
+    Vector3f n; //  Normal
+};
+
 struct Triangle {
-    Vector3f p[3]; //  Position
+    Vertex* v[3];
 };
 
 

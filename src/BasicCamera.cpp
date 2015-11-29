@@ -57,6 +57,7 @@ void BasicCamera::render(Scene& scene) {
             if (hit.triangle)
                 render_.setPixel(viewWidth_-x-1, viewHeight_-y-1, sf::Color(ray.t * 10, ray.t * 10, ray.t * 10));
         }
+        printf("%0.3f%%\r", (float)(y*100)/viewHeight_);
     }
 
     render_.saveToFile("render.png");
