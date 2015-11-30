@@ -3,13 +3,14 @@
 
 
 #include "Scene.hpp"
+#include "Light.hpp"
 
 
 template<typename T_Derived>
 class Camera {
 public:
-    void render(Scene& scene) {
-        static_cast<T_Derived>(this)->render(scene);
+    void render(Scene& scene, Light* light) {
+        static_cast<T_Derived>(this)->render(scene, light);
     }
 };
 

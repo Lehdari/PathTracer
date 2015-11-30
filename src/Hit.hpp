@@ -5,11 +5,29 @@
 #include "Triangle.hpp"
 
 
-struct Hit {
-    const Triangle* triangle;
-    float beta;
-    float gamma;
+class Hit {
+public:
+    Hit(void);
+
+    void set(const Triangle* triangle, float beta, float gamma);
+    void set(float beta, float gamma);
+
+    const Triangle* triangle(void) const;
+    float beta(void) const;
+    float gamma(void) const;
+
+    const Vertex& getBarycentric(void) const;
+
+private:
+    const Triangle* triangle_;
+    float beta_;
+    float gamma_;
+
+    //  Barycentric vertex calculated from triangle vertices
+    Vertex barycentric_;
 };
+
+
 
 
 #endif  // HIT_HPP

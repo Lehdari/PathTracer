@@ -20,7 +20,7 @@ public:
     const Vector3f& getRight(void) const;
     const Vector3f& getUp(void) const;
 
-    void render(Scene& scene);
+    void render(Scene& scene, Light* light);
 
 protected:
     Ray generateRay(float x, float y) const;

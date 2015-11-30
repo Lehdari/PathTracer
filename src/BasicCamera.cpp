@@ -42,20 +42,38 @@ const Vector3f& BasicCamera::getUp(void) const {
     return up_;
 }
 
-void BasicCamera::render(Scene& scene) {
+void BasicCamera::render(Scene& scene, Light* light) {
     Ray ray;
 
     render_.create(viewWidth_, viewHeight_);
 
     for (auto y=0u; y<viewHeight_; ++y) {
         for (auto x=0u; x<viewWidth_; ++x) {
-
             ray = generateRay(x + 0.5f, y + 0.5f);
 
             Hit hit = scene.traceRay(ray);
 
-            if (hit.triangle)
-                render_.setPixel(viewWidth_-x-1, viewHeight_-y-1, sf::Color(ray.t * 10, ray.t * 10, ray.t * 10));
+            if (hit.triangle()) {
+
+                Vertex vh = hit.getBarycentric();
+
+                LightSample ls = light->drawSample(vh.p);
+                float lt = ls.ray.t;
+
+                Hit shadowHit = scene.traceRay(ls.ray);
+
+                if (ls.ray.t >= lt - 0.00001) {
+
+                    //render_.setPixel(viewWidth_-x-1, viewHeight_-y-1, sf::Color(ray.t * 10, ray.t * 10, ray.t * 10));
+                    /*render_.setPixel(viewWidth_-x-1, viewHeight_-y-1, sf::Color(vh.n[0] * 127 + 128,
+                                                                                vh.n[1] * 127 + 128,
+                                                                                vh.n[2] * 127 + 128));*/
+                    float a = 1.0f / (ls.ray.t*ls.ray.t);
+                    render_.setPixel(viewWidth_-x-1, viewHeight_-y-1, sf::Color(a * 40,
+                                                                                a * 40,
+                                                                                a * 40));
+                }
+            }
         }
         printf("%0.3f%%\r", (float)(y*100)/viewHeight_);
     }

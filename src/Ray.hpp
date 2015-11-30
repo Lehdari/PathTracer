@@ -7,8 +7,8 @@
 
 struct Ray {
     Vector3f o; //  ray origin
-    Vector3f d; //  ray direction
-    float t;    //  ray length
+    Vector3f d; //  ray direction (normalized!)
+    float t;    //  ray length (why d has to be normalized)
 };
 
 

@@ -10,10 +10,6 @@ Scene::Scene(const std::vector<Triangle>& triangles) :
     triangles_(triangles)
 {}
 
-const std::vector<Triangle>& Scene::getTriangles(void) const {
-    return triangles_;
-}
-
 void Scene::loadFromObj(const std::string& fileName) {
     vertices_.clear();
     triangles_.clear();
@@ -151,21 +147,30 @@ void Scene::loadFromObj(const std::string& fileName) {
         triangles_.push_back({ &vertices_.at(ids[0]), &vertices_.at(ids[1]), &vertices_.at(ids[2]) });
 }
 
+/*void Scene::addLight(Light* light) {
+    lights_.push_back(std::unique_ptr<Light>(light));
+}*/
+
 Hit Scene::traceRay(Ray& ray) const {
-    Hit hit{ nullptr, 0.0f, 0.0f };
+    Hit hit;
 
     for (auto& tri : triangles_) {
         Hit newHit = intersectRay(ray, tri);
 
-        if (newHit.triangle)
+        if (newHit.triangle())
             hit = newHit;
     }
 
     return hit;
 }
 
+const std::vector<Triangle>& Scene::getTriangles(void) const {
+    return triangles_;
+}
+
+
 Hit Scene::intersectRay(Ray& ray, const Triangle& triangle) const {
-    Hit hit{ nullptr, 0.0f, 0.0f };
+    Hit hit;
 
     float axrox = triangle.v[0]->p[0] - ray.o[0];
     float ayroy = triangle.v[0]->p[1] - ray.o[1];
@@ -205,11 +210,9 @@ Hit Scene::intersectRay(Ray& ray, const Triangle& triangle) const {
                     azbz,   azcz,   azroz;
         float t = mT.determinant() / aDet;
 
-        if (t < ray.t) {
+        if (t > 0.0f && t < ray.t) {
             ray.t = t;
-            hit.triangle = &triangle;
-            hit.beta = beta;
-            hit.gamma = gamma;
+            hit.set(&triangle, beta, gamma);
         }
     }
 
