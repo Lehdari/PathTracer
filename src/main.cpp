@@ -4,6 +4,7 @@
 #include "Mesh.hpp"
 #include "Shader.hpp"
 
+#include <SFML/Graphics.hpp>
 #include <iostream>
 
 
@@ -12,7 +13,7 @@ int main(void) {
     sf::ContextSettings settings;
     settings.depthBits         = 24; // Request a 24 bits depth buffer
     settings.stencilBits       = 8;  // Request a 8 bits stencil buffer
-    settings.antialiasingLevel = 2;  // Request 2 levels of antialiasing
+    settings.antialiasingLevel = 8;  // Request 2 levels of antialiasing
     settings.majorVersion = 3;
     settings.minorVersion = 0;
     sf::Window window(sf::VideoMode(800, 600, 32), "RayTracer", sf::Style::Default, settings);
@@ -34,14 +35,20 @@ int main(void) {
     scene.loadFromObj("res/scenes/cornell.obj");
 
     //  Light
-    PointLight light({0.55f, -0.25f, -0.6f}, {1.0f, 1.0f, 1.0f});
+    PointLight light({0.55f, -0.25f, -0.6f}, {1.2f, 1.15f, 1.0f});
     //scene.addLight(&light);
 
     //  Camera
-    BasicCamera camera(400, 300, PI*0.5f, 4.0f/3.0f, 0.2f, 4.0f);
+    BasicCamera camera(PI*0.5f, 4.0f/3.0f, 0.2f, 4.0f);
     camera.lookAt( {0.7f, -0.8f, -0.95f},
                    {0.0f, -0.5f, 0.0f},
                    {0.0f, 1.0f, 0.0f} );
+    /*camera.lookAt( {-0.3f, -0.1f, 0.9f},
+                   {-0.7f, -0.6f, 0.0f},
+                   {0.0f, 1.0f, 0.0f} );*/
+
+    //  Canvas
+    Canvas canvas(400, 300);
 
     //  Mesh
     Mesh mesh;
@@ -69,7 +76,9 @@ int main(void) {
                 break;
                 case sf::Keyboard::Space:
                     //  Render
-                    camera.render(scene, &light, "render.png");
+                    camera.render(scene, &light, canvas);
+                    canvas.filter(0.75);
+                    canvas.saveToFile("render.png");
                 break;
                 default:
                 break;
@@ -84,9 +93,9 @@ int main(void) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         mesh.render(shader, camera);
-        camera.lookAt( {0.8f*cosf(t*PI*2*0.125f), 0.5f+0.1f*cosf(t*PI*2*0.021f), 0.8f*sinf(t*PI*2*0.125f)},
+        /*camera.lookAt( {0.8f*cosf(t*PI*2*0.125f), 0.5f+0.1f*cosf(t*PI*2*0.021f), 0.8f*sinf(t*PI*2*0.125f)},
                        {0.0f, 0.0f, 0.0f},
-                       {0.0f, 1.0f, 0.0f} );
+                       {0.0f, 1.0f, 0.0f} );*/
 
         t += 1.0f/60.0f;
 

@@ -3,19 +3,12 @@
 #include <iostream> //  TEMP
 
 
-BasicCamera::BasicCamera(unsigned viewWidth, unsigned viewHeight,
-                         float fov, float aspectRatio, float near, float far) :
-    viewWidth_(viewWidth), viewHeight_(viewHeight),
+BasicCamera::BasicCamera(float fov, float aspectRatio, float near, float far) :
     fov_(fov), fovRatio_(tan(fov_*0.5f)), aspectRatio_(aspectRatio),
     orientation_(Matrix4f::Identity())
 {
     projection(fov_, aspectRatio_, near, far);
 }
-
-BasicCamera::BasicCamera(unsigned viewWidth, unsigned viewHeight,
-                         float fov, float near, float far) :
-    BasicCamera(viewWidth, viewHeight, fov, (float)viewWidth/(float)viewHeight, near, far)
-{}
 
 void BasicCamera::lookAt(const Vector3f& from, const Vector3f& to, const Vector3f& up) {
     position_ = from;
@@ -84,14 +77,15 @@ Matrix4f BasicCamera::getVP(void) const {
     return projection_ * orientation_;
 }
 
-void BasicCamera::render(Scene& scene, Light* light, const std::string& fileName) {
+void BasicCamera::render(Scene& scene, Light* light, Canvas& canvas) {
     Ray ray;
 
-    render_.create(viewWidth_, viewHeight_);
+    unsigned viewW = canvas.getWidth();
+    unsigned viewH = canvas.getHeight();
 
-    for (auto y=0u; y<viewHeight_; ++y) {
-        for (auto x=0u; x<viewWidth_; ++x) {
-            ray = generateRay(x + 0.5f, y + 0.5f);
+    for (auto y=0u; y<viewH; ++y) {
+        for (auto x=0u; x<viewW; ++x) {
+            ray = generateRay(x + 0.5f, y + 0.5f, viewW, viewH);
 
             Hit hit = scene.traceRay(ray);
 
@@ -105,29 +99,25 @@ void BasicCamera::render(Scene& scene, Light* light, const std::string& fileName
                 Hit shadowHit = scene.traceRay(ls.ray);
 
                 if (ls.ray.t >= lt - 0.00001) {
-
-                    //render_.setPixel(viewWidth_-x-1, viewHeight_-y-1, sf::Color(ray.t * 10, ray.t * 10, ray.t * 10));
-                    /*render_.setPixel(viewWidth_-x-1, viewHeight_-y-1, sf::Color(vh.n[0] * 127 + 128,
-                                                                                vh.n[1] * 127 + 128,
-                                                                                vh.n[2] * 127 + 128));*/
                     float a = 1.0f / (ls.ray.t*ls.ray.t);
-                    render_.setPixel(x, viewHeight_-y-1, sf::Color(a * 40,
-                                                                                a * 40,
-                                                                                a * 40));
+                    float b = vh.n.dot(-ls.ray.d);
+                    if (b < 0.0f) b = 0.0f;
+
+                    canvas.addSample({x + 0.5f, viewH-y-1 + 0.5f},
+                                     {a*b*ls.col[0], a*b*ls.col[1], a*b*ls.col[2]});
                 }
             }
         }
-        printf("%0.3f%%\r", (float)(y*100)/viewHeight_);
+        printf("%0.3f%%\r", (float)(y*100)/viewH);
     }
     printf("\n");
-    render_.saveToFile(fileName);
 }
 
-Ray BasicCamera::generateRay(float x, float y) const {
+Ray BasicCamera::generateRay(float x, float y, unsigned viewWidth, unsigned viewHeight) const {
     Ray out;
 
-    float sx = ((x/viewWidth_)*2.0f - 1.0f) * fovRatio_;
-    float sy = ((y/viewHeight_)*2.0f - 1.0f) * (fovRatio_/aspectRatio_);
+    float sx = ((x/viewWidth)*2.0f - 1.0f) * fovRatio_;
+    float sy = ((y/viewHeight)*2.0f - 1.0f) * (fovRatio_/aspectRatio_);
 
     out.o = position_;
     out.d = (forward_ + sx*right_ + sy*up_).normalized();
