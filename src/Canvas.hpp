@@ -21,6 +21,7 @@ public:
     unsigned getHeight(void) const;
 
     void addSample(const Vector2f& pos, const Vector3d& val);
+    void clear(void);
     void filter(/*Filter& filter, */float gamma);
     void saveToFile(const std::string& fileName) const;
 

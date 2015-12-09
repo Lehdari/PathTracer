@@ -5,7 +5,7 @@
 
 Canvas::Canvas(unsigned width, unsigned height) :
     width_(width), height_(height),
-    pixData_(height, std::vector<Vector3d>(width, Vector3d{0.0, 0.0, 0.0}))
+    pixData_(height_, std::vector<Vector3d>(width_, Vector3d{0.0, 0.0, 0.0}))
 {}
 
 unsigned Canvas::getWidth(void) const {
@@ -19,6 +19,11 @@ unsigned Canvas::getHeight(void) const {
 void Canvas::addSample(const Vector2f& pos, const Vector3d& val) {
     if (pos[0] > 0.0f && pos[0] < width_ && pos[1] > 0.0f && pos[1] < height_)
         samples_.push_back({pos, val});
+}
+
+void Canvas::clear(void) {
+    samples_.clear();
+    pixData_ = std::vector<std::vector<Vector3d>>(height_, std::vector<Vector3d>(width_, Vector3d{0.0, 0.0, 0.0}));
 }
 
 void Canvas::filter(/*Filter& filter, */float gamma) {

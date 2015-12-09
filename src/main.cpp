@@ -5,6 +5,7 @@
 #include "Shader.hpp"
 
 #include <SFML/Graphics.hpp>
+#include <ctime>
 #include <iostream>
 
 
@@ -40,12 +41,12 @@ int main(void) {
 
     //  Camera
     BasicCamera camera(PI*0.5f, 4.0f/3.0f, 0.2f, 4.0f);
-    camera.lookAt( {0.7f, -0.8f, -0.95f},
+    /*camera.lookAt( {0.7f, -0.8f, -0.95f},
                    {0.0f, -0.5f, 0.0f},
-                   {0.0f, 1.0f, 0.0f} );
-    /*camera.lookAt( {-0.3f, -0.1f, 0.9f},
-                   {-0.7f, -0.6f, 0.0f},
                    {0.0f, 1.0f, 0.0f} );*/
+    camera.lookAt( {-0.9f, 0.2f, 0.4f},
+                   {0.0f, -0.6f, 0.1f},
+                   {0.0f, 1.0f, 0.0f} );
 
     //  Canvas
     Canvas canvas(400, 300);
@@ -56,6 +57,8 @@ int main(void) {
 
     //  Shader
     Shader shader("res/shaders/VS_Simple.glsl", "res/shaders/FS_Simple.glsl");
+
+    std::default_random_engine r(time(NULL));
 
     float t = 0.0f;
 
@@ -76,9 +79,11 @@ int main(void) {
                 break;
                 case sf::Keyboard::Space:
                     //  Render
-                    camera.render(scene, &light, canvas);
+                    for (auto i=0u; i<16; ++i)
+                        camera.render(scene, &light, canvas, r);
                     canvas.filter(0.75);
                     canvas.saveToFile("render.png");
+                    canvas.clear();
                 break;
                 default:
                 break;
