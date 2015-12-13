@@ -20,10 +20,16 @@ Mesh::Mesh(void) :
 {}
 
 Mesh::~Mesh(void) {
-    glDeleteVertexArrays(1, &vertexArrayObjectId_);
-    glDeleteBuffers(1, &positionBufferId_);
-    glDeleteBuffers(1, &texCoordBufferId_);
-    glDeleteBuffers(1, &elementBufferId_);
+    if (vertexArrayObjectId_)
+        glDeleteVertexArrays(1, &vertexArrayObjectId_);
+    if (positionBufferId_)
+        glDeleteBuffers(1, &positionBufferId_);
+    if (normalBufferId_)
+        glDeleteBuffers(1, &normalBufferId_);
+    if (texCoordBufferId_)
+        glDeleteBuffers(1, &texCoordBufferId_);
+    if (elementBufferId_)
+        glDeleteBuffers(1, &elementBufferId_);
 }
 
 void Mesh::loadFromObj(const std::string& fileName) {

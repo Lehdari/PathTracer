@@ -124,7 +124,7 @@ void BasicCamera::render(Scene& scene, Light* light, Canvas& canvas, std::defaul
         for (auto x=0u; x<viewW; ++x) {
             //printf("%u, %u: ", x, y);
             ray = generateRay(x + 0.5f, y + 0.5f, viewW, viewH);
-            Vector3d pathLight = bounce(scene, light, ray, r, 3);
+            Vector3d pathLight = bounce(scene, light, ray, r, 1);
 
             canvas.addSample({x + 0.5f, viewH-y-1 + 0.5f},
                              {pathLight[0], pathLight[1], pathLight[2]});

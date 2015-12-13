@@ -3,6 +3,8 @@
 
 
 #include "MathTypes.hpp"
+#include "Texture.hpp"
+#include "PixelBufferObject.hpp"
 
 #include <string>
 #include <vector>
