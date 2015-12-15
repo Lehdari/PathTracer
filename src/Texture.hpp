@@ -25,6 +25,7 @@ public:
     void clear(unsigned width, unsigned height,
                GLenum format = GL_RGBA, GLenum type = GL_UNSIGNED_BYTE);
     void loadFromImage(const sf::Image& image);
+    void setAttribute(GLenum attr, GLenum val);
 
 private:
     GLuint textureId_;

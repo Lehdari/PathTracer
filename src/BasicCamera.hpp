@@ -23,13 +23,7 @@ public:
 
     Matrix4f getVP(void) const;
 
-    void render(Scene& scene, Light* light, Canvas& canvas, std::default_random_engine& r);
-
-protected:
     Ray generateRay(float x, float y, unsigned viewWidth, unsigned viewHeight) const;
-
-    Vector3d bounce(Scene& scene, Light* light, Ray& ray,
-                    std::default_random_engine& r, unsigned nBounces = 0) const;
 
 private:
     float fov_;

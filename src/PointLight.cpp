@@ -5,7 +5,8 @@ PointLight::PointLight(const Vector3f& position, const Vector3f& color) :
     position_(position), color_(color)
 {}
 
-LightSample PointLight::drawSample(const Vector3f& p) const {
+LightSample PointLight::drawSample(const Vector3f& p) {
+    //std::lock_guard<std::mutex> lock(mutex_);
     Vector3f pd = p-position_;
 
     LightSample s;

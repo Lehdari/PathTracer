@@ -18,7 +18,7 @@ public:
     PixelBufferObject& operator=(PixelBufferObject&& other)       = delete;
 
     GLubyte* map(unsigned long size) const;
-    void unmapAndUpdate(Texture& texture) const;
+    void unmapAndUpdate(const Texture& texture) const;
 
 private:
     GLuint pixelBufferId_;

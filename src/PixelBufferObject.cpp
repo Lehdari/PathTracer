@@ -21,7 +21,7 @@ GLubyte* PixelBufferObject::map(unsigned long size) const {
     return (GLubyte*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 }
 
-void PixelBufferObject::unmapAndUpdate(Texture& texture) const {
+void PixelBufferObject::unmapAndUpdate(const Texture& texture) const {
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB); // release the mapped buffer
 
     glBindTexture(GL_TEXTURE_2D, texture);

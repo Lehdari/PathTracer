@@ -11,6 +11,7 @@ Scene::Scene(const std::vector<Triangle>& triangles) :
 {}
 
 void Scene::loadFromObj(const std::string& fileName) {
+    std::lock_guard<std::mutex> lock(triangleMutex_);
     vertices_.clear();
     triangles_.clear();
     //normals_.clear();
@@ -151,7 +152,9 @@ void Scene::loadFromObj(const std::string& fileName) {
     lights_.push_back(std::unique_ptr<Light>(light));
 }*/
 
-Hit Scene::traceRay(Ray& ray) const {
+Hit Scene::traceRay(Ray& ray) {
+    //std::lock_guard<std::mutex> lock(triangleMutex_);
+
     Hit hit;
 
     for (auto& tri : triangles_) {
@@ -164,7 +167,8 @@ Hit Scene::traceRay(Ray& ray) const {
     return hit;
 }
 
-const std::vector<Triangle>& Scene::getTriangles(void) const {
+const std::vector<Triangle>& Scene::getTriangles(void) {
+    std::lock_guard<std::mutex> lock(triangleMutex_);
     return triangles_;
 }
 

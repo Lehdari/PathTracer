@@ -58,3 +58,9 @@ void Texture::loadFromImage(const sf::Image& image) {
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+void Texture::setAttribute(GLenum attr, GLenum val) {
+    glBindTexture(GL_TEXTURE_2D, textureId_);
+    glTexParameteri(GL_TEXTURE_2D, attr, val);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}

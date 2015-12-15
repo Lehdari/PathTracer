@@ -5,10 +5,9 @@
 #include "Triangle.hpp"
 #include "Ray.hpp"
 #include "Hit.hpp"
-//#include "Light.hpp"
 
 #include <vector>
-#include <memory>
+#include <mutex>
 
 
 class Scene {
@@ -20,21 +19,19 @@ public:
 
     //void addLight(Light* light);
 
-    Hit traceRay(Ray& ray) const;
+    Hit traceRay(Ray& ray);
 
-    const std::vector<Triangle>& getTriangles(void) const;
+    const std::vector<Triangle>& getTriangles(void);
 
 private:
     //  triangle data
     std::vector<Triangle> triangles_;
     std::vector<Vertex> vertices_;
+    std::mutex triangleMutex_;
 
     bool usingTexCoords_;
     bool usingNormals_;
     bool usingIndexing_;
-
-    //  light data
-    //std::vector<std::unique_ptr<Light>> lights_;
 
     Hit intersectRay(Ray& ray, const Triangle& triangle) const;
 };
