@@ -51,18 +51,20 @@ protected:
 template<typename T_Camera>
 void Renderer::render(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
                 std::default_random_engine& r) {
+    for (auto& thread : threads_)
+        thread.join();
+    threads_.clear();
+
+    printf("Launching threads..\n");
     for (auto i=0u; i<maxThreads_; ++i) {
 
         unsigned yMin = ceil(((float)canvas.getHeight() / maxThreads_)*i);
         unsigned yMax = ceil(((float)canvas.getHeight() / maxThreads_)*(i+1));
 
-        threads_.emplace_back([yMin, yMax, &camera, &scene, &light, &canvas, &r, this]
+        threads_.emplace_back([yMin, yMax, &camera, &scene, light, &canvas, &r, this]
                               { renderAsync(camera, scene, light, canvas, r,
                                             0, canvas.getWidth(), yMin, yMax); } );
     }
-    for (auto& thread : threads_)
-        thread.join();
-    threads_.clear();
 }
 
 /*template<typename T_Camera>
@@ -100,12 +102,16 @@ void Renderer::renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light,
     for (auto y=yMin; y<yMax; ++y) {
         for (auto x=xMin; x<xMax; ++x) {
             //printf("%u, %u: ", x, y);
-            for (auto i=0u; i<32; ++i) {
-                ray = camera.generateRay(x + 0.5f, y + 0.5f, viewW, viewH);
-                Vector3d pathLight = bounce(scene, light, ray, r, 1);
+            for (auto i=0u; i<2; ++i) {
+                for (auto j=0u; j<2; ++j) {
+                    float rayX = x+((r() % 65536) / 65534.0f);
+                    float rayY = y+((r() % 65536) / 65534.0f);
+                    ray = camera.generateRay(rayX, rayY, viewW, viewH);
+                    Vector3d pathLight = bounce(scene, light, ray, r, 1);
 
-                canvas.addSample({x + 0.5f, y + 0.5f},
-                                 {pathLight[0], pathLight[1], pathLight[2]});
+                    canvas.addSample({rayX, rayY},
+                                     {pathLight[0], pathLight[1], pathLight[2]});
+                }
             }
         }
         //printf("%0.3f%%\r", (float)((y-yMin)*100)/(yMax-yMin));
