@@ -8,15 +8,20 @@ Sampler::Sampler(Sampler::Type type, unsigned size) :
 {}
 
 
-void Sampler::drawSample(float& x, float& y, unsigned id) {
+void Sampler::drawSample(float& x, float& y, unsigned id,
+                         std::default_random_engine& r) {
     switch (type_) {
     case TYPE_REGULAR:
-        x = id % sizeSqrt_;
-        y = id / sizeSqrt_;
+        x = ((id % sizeSqrt_) + 0.5f) / sizeSqrt_;
+        y = ((id / sizeSqrt_) + 0.5f) / sizeSqrt_;
     break;
     case TYPE_UNIFORM:
+        x = (r()%4096)/4096.0f;
+        y = (r()%4096)/4096.0f;
     break;
     case TYPE_JITTERED:
+        x = ((id % sizeSqrt_) + (r()%4096)/4096.0f) / sizeSqrt_;
+        y = ((id / sizeSqrt_) + (r()%4096)/4096.0f) / sizeSqrt_;
     break;
     }
 }

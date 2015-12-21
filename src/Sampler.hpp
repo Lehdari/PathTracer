@@ -2,6 +2,9 @@
 #define SAMPLER_HPP
 
 
+#include <random>
+
+
 class Sampler {
 public:
     enum Type {
@@ -11,7 +14,8 @@ public:
     };
 
     Sampler(Type type, unsigned size);
-    void drawSample(float& x, float& y, unsigned id);
+    void drawSample(float& x, float& y, unsigned id,
+                    std::default_random_engine& r);
 
 private:
     Type type_;

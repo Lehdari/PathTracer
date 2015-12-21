@@ -6,6 +6,7 @@
 #include "Camera.hpp"
 #include "Light.hpp"
 #include "Canvas.hpp"
+#include "Sampler.hpp"
 
 #include <vector>
 #include <thread>
@@ -97,23 +98,22 @@ void Renderer::renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light,
     unsigned viewW = canvas.getWidth();
     unsigned viewH = canvas.getHeight();
 
+    const unsigned nSamples = 16;
+    Sampler sampler(Sampler::TYPE_JITTERED, nSamples);
     Ray ray;
 
     for (auto y=yMin; y<yMax; ++y) {
         for (auto x=xMin; x<xMax; ++x) {
-            for (auto i=0u; i<4; ++i) {
-                for (auto j=0u; j<4; ++j) {
-                    float rayX = x+((r() % 1024) / 1024.0f);
-                    float rayY = y+((r() % 1024) / 1024.0f);
-                    if (rayY-y >= 1.0f)
-                        printf("OMG\n");
+            for (auto i=0u; i<nSamples; ++i) {
+                float rayX, rayY;
+                sampler.drawSample(rayX, rayY, i, r);
+                rayX += x;
+                rayY += y;
+                ray = camera.generateRay(rayX, rayY, viewW, viewH);
+                Vector3d pathLight = bounce(scene, light, ray, r, 4);
 
-                    ray = camera.generateRay(rayX, rayY, viewW, viewH);
-                    Vector3d pathLight = bounce(scene, light, ray, r, 1);
-
-                    canvas.addSample({rayX, rayY},
-                                     {pathLight[0], pathLight[1], pathLight[2]});
-                }
+                canvas.addSample({rayX, rayY},
+                                 {pathLight[0], pathLight[1], pathLight[2]});
             }
         }
         //printf("%0.3f%%\r", (float)((y-yMin)*100)/(yMax-yMin));
