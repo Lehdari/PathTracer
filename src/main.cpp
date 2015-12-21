@@ -6,6 +6,8 @@
 #include "Shader.hpp"
 #include "Texture.hpp"
 #include "PixelBufferObject.hpp"
+#include "Keyboard.hpp"
+#include "EventFunctions.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <ctime>
@@ -94,8 +96,25 @@ int main(void) {
     float t = 0.0f;
     bool showRender = false;
 
+    //  Keyboard and events setup
+    Keyboard keyboard;
+    keyboard.setKeyDownFunction(sf::Keyboard::W,
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, 0.0f, -0.05f}));
+    keyboard.setKeyDownFunction(sf::Keyboard::S,
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, 0.0f, 0.05f}));
+    keyboard.setKeyDownFunction(sf::Keyboard::D,
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.05f, 0.0f, 0.0f}));
+    keyboard.setKeyDownFunction(sf::Keyboard::A,
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{-0.05f, 0.0f, 0.0f}));
+    keyboard.setKeyDownFunction(sf::Keyboard::E,
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, 0.05f, 0.0f}));
+    keyboard.setKeyDownFunction(sf::Keyboard::Q,
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, -0.05f, 0.0f}));
 
-    printf("%0.7f\n", 16000.0f+(1023)/1024.0f);
+    keyboard.setKeyPressedFunction(sf::Keyboard::Space,
+        std::bind(&render, std::ref(renderer), std::ref(camera), std::ref(scene),
+                  &light, std::ref(canvas),
+                  std::ref(r), std::ref(showRender)));
 
 
     // The main loop - ends as soon as the window is closed
@@ -109,7 +128,8 @@ int main(void) {
                 window.close();
             break;
             case sf::Event::KeyPressed:
-                switch(event.key.code) {
+                keyboard.keyPressed(event.key.code);
+                /*switch(event.key.code) {
                 case sf::Keyboard::Escape:
                     window.close();
                 break;
@@ -131,11 +151,16 @@ int main(void) {
                 break;
                 default:
                 break;
-                }
+                }*/
+            break;
+            case sf::Event::KeyReleased:
+                keyboard.keyReleased(event.key.code);
+            break;
             default:
             break;
             }
         }
+        keyboard.callKeyDownFunctions();
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

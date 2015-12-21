@@ -39,20 +39,13 @@ void BasicCamera::moveLocal(const Vector3f& m) {
     position_ += (orientation_*m2).block<3,1>(0,0);
 
     Matrix4f move;
-    move <<   1.0f , 0.0f , 0.0f , m[0],
-              0.0f , 1.0f , 0.0f , m[1],
-              0.0f , 0.0f , 1.0f , m[2],
+    move <<   1.0f , 0.0f , 0.0f , -m[0],
+              0.0f , 1.0f , 0.0f , -m[1],
+              0.0f , 0.0f , 1.0f , -m[2],
               0.0f , 0.0f , 0.0f , 1.0f;
 
 
     orientation_ = move*orientation_;
-
-    //orientation_ = orientation_ * move;
-    /*orientation_ << right_[0]       , right_[1]     , right_[2]     , -right_.dot(position_),
-                    up_[0]          , up_[1]        , up_[2]        , -up_.dot(position_),
-                    -forward_[0]    , -forward_[1]  , -forward_[2]  , forward_.dot(position_) ,
-                    0.0f            , 0.0f          , 0.0f          , 1.0f;
-    */
 }
 
 const Vector3f& BasicCamera::getPosition(void) const {
