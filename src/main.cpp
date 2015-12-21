@@ -79,11 +79,14 @@ int main(void) {
                 break;
                 case sf::Keyboard::Space:
                     //  Render
-                    for (auto i=0u; i<16; ++i)
+                    for (auto i=0u; i<4; ++i)
                         camera.render(scene, &light, canvas, r);
                     canvas.filter(0.75);
                     canvas.saveToFile("render.png");
                     canvas.clear();
+                break;
+                case sf::Keyboard::W:
+                    camera.moveLocal({0.0f, 0.0f, 0.05f});
                 break;
                 default:
                 break;

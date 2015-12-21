@@ -70,21 +70,19 @@ void BasicCamera::projection(float fov, float aspectRatio, float near, float far
 }
 
 void BasicCamera::moveLocal(const Vector3f& m) {
-    Matrix4f move;
-    move <<   1.0f , 0.0f , 0.0f , m[0],
-              0.0f , 1.0f , 0.0f , m[1],
-              0.0f , 0.0f , 1.0f , m[2],
-              0.0f , 0.0f , 0.0f , 0.0f;
-
-
-    move = move*orientation_;
-    Vector4f v;
-    v << position_, 1.0f;
-
     Vector4f m2;
     m2 << m, 0.0f;
 
     position_ += (orientation_*m2).block<3,1>(0,0);
+
+    Matrix4f move;
+    move <<   1.0f , 0.0f , 0.0f , m[0],
+              0.0f , 1.0f , 0.0f , m[1],
+              0.0f , 0.0f , 1.0f , m[2],
+              0.0f , 0.0f , 0.0f , 1.0f;
+
+
+    orientation_ = move*orientation_;
 
     //orientation_ = orientation_ * move;
     /*orientation_ << right_[0]       , right_[1]     , right_[2]     , -right_.dot(position_),
@@ -124,7 +122,7 @@ void BasicCamera::render(Scene& scene, Light* light, Canvas& canvas, std::defaul
         for (auto x=0u; x<viewW; ++x) {
             //printf("%u, %u: ", x, y);
             ray = generateRay(x + 0.5f, y + 0.5f, viewW, viewH);
-            Vector3d pathLight = bounce(scene, light, ray, r, 3);
+            Vector3d pathLight = bounce(scene, light, ray, r, 1);
 
             canvas.addSample({x + 0.5f, viewH-y-1 + 0.5f},
                              {pathLight[0], pathLight[1], pathLight[2]});
