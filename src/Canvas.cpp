@@ -5,8 +5,13 @@
 
 Canvas::Canvas(unsigned width, unsigned height) :
     width_(width), height_(height),
-    pixData_(height_, std::vector<Vector3d>(width_, Vector3d{0.0, 0.0, 0.0}))
-{}
+    pixData_(height_, std::vector<Vector3d>(width_, Vector3d{0.0, 0.0, 0.0})),
+    pixDataMax_(0.0)
+{
+    texture_.clear(width_, height_);
+    texture_.setAttribute(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    texture_.setAttribute(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
 
 unsigned Canvas::getWidth(void) const {
     return width_;
@@ -16,18 +21,47 @@ unsigned Canvas::getHeight(void) const {
     return height_;
 }
 
+const Texture& Canvas::getTexture(void) {
+    std::lock_guard<std::mutex> lock(pixDataMutex_);
+
+    if (pixDataDirty_) {
+        auto ptr = pixelBuffer_.map(texture_.width()*texture_.height()*4*sizeof(unsigned char));
+        if(ptr) {
+            for (auto y=0u; y<height_; ++y) {
+                for (auto x=0u; x<width_; ++x) {
+                    ptr[(y*width_ + x)*4 + 0] = (pixData_[y][x][0] / pixDataMax_)*255;
+                    ptr[(y*width_ + x)*4 + 1] = (pixData_[y][x][1] / pixDataMax_)*255;
+                    ptr[(y*width_ + x)*4 + 2] = (pixData_[y][x][2] / pixDataMax_)*255;
+                    ptr[(y*400 + x)*4 + 3] = 255;
+                }
+            }
+            pixelBuffer_.unmapAndUpdate(texture_);
+        }
+
+        pixDataDirty_ = false;
+    }
+
+    return texture_;
+}
+
 void Canvas::addSample(const Vector2f& pos, const Vector3d& val) {
-    if (pos[0] > 0.0f && pos[0] < width_ && pos[1] > 0.0f && pos[1] < height_)
-        samples_.push_back({pos, val});
+    std::lock_guard<std::mutex> lock(pixDataMutex_);
+
+    pixData_[(unsigned)pos[1]][(unsigned)pos[0]] += val;
+    for (auto i=0u; i<3; ++i)
+        if (pixData_[(unsigned)pos[1]][(unsigned)pos[0]][i] > pixDataMax_)
+            pixDataMax_ = pixData_[(unsigned)pos[1]][(unsigned)pos[0]][i];
+
+    pixDataDirty_ = true;
 }
 
 void Canvas::clear(void) {
-    samples_.clear();
+    //samples_.clear();
     pixData_ = std::vector<std::vector<Vector3d>>(height_, std::vector<Vector3d>(width_, Vector3d{0.0, 0.0, 0.0}));
 }
 
 void Canvas::filter(/*Filter& filter, */float gamma) {
-    for (auto& s : samples_) {
+    /*for (auto& s : samples_) {
         pixData_[(unsigned)s.p[1]][(unsigned)s.p[0]] += s.v;
     }
 
@@ -50,17 +84,22 @@ void Canvas::filter(/*Filter& filter, */float gamma) {
     for (auto& row : pixData_)
         for (auto& p : row)
             for (auto i=0u; i<3; ++i)
-                p[i] = pow((p[i]-min)*n, gamma);
+                p[i] = pow((p[i]-min)*n, gamma);*/
 }
 
-void Canvas::saveToFile(const std::string& fileName) const {
+void Canvas::saveToFile(const std::string& fileName) {
+    std::lock_guard<std::mutex> lock(pixDataMutex_);
+
     sf::Image img;
     img.create(width_, height_);
 
     for (auto y=0u; y<height_; ++y) {
         for (auto x=0u; x<width_; ++x) {
             auto& p = pixData_[y][x];
-            img.setPixel(x, y, sf::Color(p[0]*255, p[1]*255, p[2]*255));
+            img.setPixel(x, height_ - y - 1,
+                         sf::Color((pixData_[y][x][0] / pixDataMax_)*255,
+                                   (pixData_[y][x][1] / pixDataMax_)*255,
+                                   (pixData_[y][x][2] / pixDataMax_)*255));
         }
     }
 

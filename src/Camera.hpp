@@ -9,8 +9,8 @@
 template<typename T_Derived>
 class Camera {
 public:
-    void render(Scene& scene, Light* light) {
-        static_cast<T_Derived>(this)->render(scene, light);
+    Ray generateRay(float x, float y, unsigned viewWidth, unsigned viewHeight) const {
+        return static_cast<const T_Derived*>(this)->generateRay(x, y, viewWidth, viewHeight);
     }
 };
 

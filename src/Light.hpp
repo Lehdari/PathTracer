@@ -14,7 +14,7 @@ struct LightSample {
 class Light {
 public:
     //  draw sample from given point
-    virtual LightSample drawSample(const Vector3f& p) const = 0;
+    virtual LightSample drawSample(const Vector3f& p) = 0;
 };
 
 

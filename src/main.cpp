@@ -1,8 +1,11 @@
 #include "Scene.hpp"
 #include "BasicCamera.hpp"
 #include "PointLight.hpp"
+#include "Renderer.hpp"
 #include "Mesh.hpp"
 #include "Shader.hpp"
+#include "Texture.hpp"
+#include "PixelBufferObject.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <ctime>
@@ -21,7 +24,7 @@ int main(void) {
     // Activate the window for OpenGL rendering
     window.setActive();
     // Limit the framerate to 60 frames per second (this step is optional)
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(30);
     //  Initialize GLEW
     glewInit();
 
@@ -36,20 +39,31 @@ int main(void) {
     scene.loadFromObj("res/scenes/cornell.obj");
 
     //  Light
+    //  cornell
     PointLight light({0.55f, -0.25f, -0.6f}, {1.2f, 1.15f, 1.0f});
-    //scene.addLight(&light);
+    //  hub
+    //PointLight light({0.0f, 3.25f, -0.0f}, {1.2f, 1.15f, 1.0f});
 
     //  Camera
-    BasicCamera camera(PI*0.5f, 4.0f/3.0f, 0.2f, 4.0f);
+    BasicCamera camera(PI*0.5f, 4.0f/3.0f, 0.2f, 100.0f);
+    //  cornell 1
     /*camera.lookAt( {0.7f, -0.8f, -0.95f},
                    {0.0f, -0.5f, 0.0f},
                    {0.0f, 1.0f, 0.0f} );*/
+    //  cornell 2
     camera.lookAt( {-0.9f, 0.2f, 0.4f},
                    {0.0f, -0.6f, 0.1f},
                    {0.0f, 1.0f, 0.0f} );
+    //  hub
+    /*camera.lookAt( {-5.9f, 1.2f, -1.4f},
+                   {0.0f, 2.2f, 0.1f},
+                   {0.0f, 1.0f, 0.0f} );*/
 
     //  Canvas
     Canvas canvas(400, 300);
+
+    //  Renderer
+    Renderer renderer(8);
 
     //  Mesh
     Mesh mesh;
@@ -58,9 +72,31 @@ int main(void) {
     //  Shader
     Shader shader("res/shaders/VS_Simple.glsl", "res/shaders/FS_Simple.glsl");
 
-    std::default_random_engine r(time(NULL));
+    //  Render result display stuff
+    Shader imgShader("res/shaders/VS_Image.glsl", "res/shaders/FS_Image.glsl");
 
+    static const float quad[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f,  -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        1.0f,  -1.0f, 0.0f,
+        1.0f,   1.0f, 0.0f
+    };
+
+    GLuint quadVertexBuffer;
+    glGenBuffers(1, &quadVertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad), &quad[0], GL_STATIC_DRAW);
+
+    //  Some other stuff
+    std::default_random_engine r(time(NULL));
     float t = 0.0f;
+    bool showRender = false;
+
+
+    printf("%0.7f\n", 16000.0f+(1023)/1024.0f);
+
 
     // The main loop - ends as soon as the window is closed
     while (window.isOpen())
@@ -77,13 +113,24 @@ int main(void) {
                 case sf::Keyboard::Escape:
                     window.close();
                 break;
-                case sf::Keyboard::Space:
+                case sf::Keyboard::Space: {
                     //  Render
+<<<<<<< HEAD
                     for (auto i=0u; i<4; ++i)
                         camera.render(scene, &light, canvas, r);
                     canvas.filter(0.75);
+=======
+                    renderer.render(camera, scene, &light, canvas, r);
+
+                    if (!showRender)
+                        showRender = true;
+                } break;
+                case sf::Keyboard::Return:
+                    showRender = !showRender;
+                break;
+                case sf::Keyboard::P:
+>>>>>>> ddda82d77145e62cbfd1e97c6456def7dd305db6
                     canvas.saveToFile("render.png");
-                    canvas.clear();
                 break;
                 case sf::Keyboard::W:
                     camera.moveLocal({0.0f, 0.0f, 0.05f});
@@ -97,18 +144,35 @@ int main(void) {
         }
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClearDepth(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        mesh.render(shader, camera);
-        /*camera.lookAt( {0.8f*cosf(t*PI*2*0.125f), 0.5f+0.1f*cosf(t*PI*2*0.021f), 0.8f*sinf(t*PI*2*0.125f)},
-                       {0.0f, 0.0f, 0.0f},
-                       {0.0f, 1.0f, 0.0f} );*/
+        if (!showRender) {
+            mesh.render(shader, camera);
+            /*camera.lookAt( {0.8f*cosf(t*PI*2*0.125f), 0.5f+0.1f*cosf(t*PI*2*0.021f), 0.8f*sinf(t*PI*2*0.125f)},
+                           {0.0f, 0.0f, 0.0f},
+                           {0.0f, 1.0f, 0.0f} );*/
+        }
+        else {
+            glUseProgram(imgShader.getId());
+
+            glBindBuffer(GL_ARRAY_BUFFER, quadVertexBuffer);
+            glBindTexture(GL_TEXTURE_2D, canvas.getTexture());
+
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            glBindBuffer(GL_VERTEX_ARRAY, 0);
+        }
 
         t += 1.0f/60.0f;
 
         window.display();
     }
+
+    //  Cleanup
+    glDeleteBuffers(1, &quadVertexBuffer);
 
     return 0;
 }
