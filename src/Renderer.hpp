@@ -101,11 +101,13 @@ void Renderer::renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light,
 
     for (auto y=yMin; y<yMax; ++y) {
         for (auto x=xMin; x<xMax; ++x) {
-            //printf("%u, %u: ", x, y);
-            for (auto i=0u; i<2; ++i) {
-                for (auto j=0u; j<2; ++j) {
-                    float rayX = x+((r() % 65536) / 65534.0f);
-                    float rayY = y+((r() % 65536) / 65534.0f);
+            for (auto i=0u; i<4; ++i) {
+                for (auto j=0u; j<4; ++j) {
+                    float rayX = x+((r() % 1024) / 1024.0f);
+                    float rayY = y+((r() % 1024) / 1024.0f);
+                    if (rayY-y >= 1.0f)
+                        printf("OMG\n");
+
                     ray = camera.generateRay(rayX, rayY, viewW, viewH);
                     Vector3d pathLight = bounce(scene, light, ray, r, 1);
 

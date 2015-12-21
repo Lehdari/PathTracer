@@ -24,7 +24,7 @@ int main(void) {
     // Activate the window for OpenGL rendering
     window.setActive();
     // Limit the framerate to 60 frames per second (this step is optional)
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(30);
     //  Initialize GLEW
     glewInit();
 
@@ -93,6 +93,9 @@ int main(void) {
     std::default_random_engine r(time(NULL));
     float t = 0.0f;
     bool showRender = false;
+
+
+    printf("%0.7f\n", 16000.0f+(1023)/1024.0f);
 
 
     // The main loop - ends as soon as the window is closed
