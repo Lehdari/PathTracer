@@ -115,11 +115,6 @@ int main(void) {
                 break;
                 case sf::Keyboard::Space: {
                     //  Render
-<<<<<<< HEAD
-                    for (auto i=0u; i<4; ++i)
-                        camera.render(scene, &light, canvas, r);
-                    canvas.filter(0.75);
-=======
                     renderer.render(camera, scene, &light, canvas, r);
 
                     if (!showRender)
@@ -129,7 +124,6 @@ int main(void) {
                     showRender = !showRender;
                 break;
                 case sf::Keyboard::P:
->>>>>>> ddda82d77145e62cbfd1e97c6456def7dd305db6
                     canvas.saveToFile("render.png");
                 break;
                 case sf::Keyboard::W:
