@@ -99,17 +99,17 @@ int main(void) {
     //  Keyboard and events setup
     Keyboard keyboard;
     keyboard.setKeyDownFunction(sf::Keyboard::W,
-        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, 0.0f, -0.05f}));
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, 0.0f, -0.025f}));
     keyboard.setKeyDownFunction(sf::Keyboard::S,
-        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, 0.0f, 0.05f}));
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, 0.0f, 0.025f}));
     keyboard.setKeyDownFunction(sf::Keyboard::D,
-        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.05f, 0.0f, 0.0f}));
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.025f, 0.0f, 0.0f}));
     keyboard.setKeyDownFunction(sf::Keyboard::A,
-        std::bind(&moveCamera, std::ref(camera), true, Vector3f{-0.05f, 0.0f, 0.0f}));
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{-0.025f, 0.0f, 0.0f}));
     keyboard.setKeyDownFunction(sf::Keyboard::E,
-        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, 0.05f, 0.0f}));
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, 0.025f, 0.0f}));
     keyboard.setKeyDownFunction(sf::Keyboard::Q,
-        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, -0.05f, 0.0f}));
+        std::bind(&moveCamera, std::ref(camera), true, Vector3f{0.0f, -0.025f, 0.0f}));
 
     keyboard.setKeyPressedFunction(sf::Keyboard::Space,
         std::bind(&render, std::ref(renderer), std::ref(camera), std::ref(scene),

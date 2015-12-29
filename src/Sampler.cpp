@@ -16,12 +16,12 @@ void Sampler::drawSample(float& x, float& y, unsigned id,
         y = ((id / sizeSqrt_) + 0.5f) / sizeSqrt_;
     break;
     case TYPE_UNIFORM:
-        x = (r()%4096)/4096.0f;
-        y = (r()%4096)/4096.0f;
+        x = (r()%1024)/1024.0f;
+        y = (r()%1024)/1024.0f;
     break;
     case TYPE_JITTERED:
-        x = ((id % sizeSqrt_) + (r()%4096)/4096.0f) / sizeSqrt_;
-        y = ((id / sizeSqrt_) + (r()%4096)/4096.0f) / sizeSqrt_;
+        x = ((id % sizeSqrt_) + (r()%1024)/1024.0f) / sizeSqrt_;
+        y = ((id / sizeSqrt_) + (r()%1024)/1024.0f) / sizeSqrt_;
     break;
     }
 }

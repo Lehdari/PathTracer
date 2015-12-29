@@ -35,15 +35,14 @@ void BasicCamera::projection(float fov, float aspectRatio, float near, float far
 void BasicCamera::moveLocal(const Vector3f& m) {
     Vector4f m2;
     m2 << m, 0.0f;
-
-    position_ += (orientation_*m2).block<3,1>(0,0);
+    auto m3 = orientation_.transpose()*m2;
+    position_ += m3.block<3,1>(0, 0);
 
     Matrix4f move;
     move <<   1.0f , 0.0f , 0.0f , -m[0],
               0.0f , 1.0f , 0.0f , -m[1],
               0.0f , 0.0f , 1.0f , -m[2],
               0.0f , 0.0f , 0.0f , 1.0f;
-
 
     orientation_ = move*orientation_;
 }
