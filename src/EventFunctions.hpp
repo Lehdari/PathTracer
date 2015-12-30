@@ -14,7 +14,9 @@
 void moveCamera(BasicCamera& camera, bool local, const Vector3f& dir);
 void render(Renderer& renderer, BasicCamera& camera, Scene& scene,
             Light* light, Canvas& canvas,
-            std::default_random_engine& r, bool& showRender);
+            std::default_random_engine& r, bool& showRender,
+            Filter& filter);
+void toggleShowRender(bool& showRender);
 
 
 #endif // EVENTFUNCTIONS_HPP

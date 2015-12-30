@@ -3,14 +3,22 @@
 #include <SFML/Graphics/Image.hpp>
 
 
-Canvas::Canvas(unsigned width, unsigned height) :
-    width_(width), height_(height),
+Canvas::Canvas(Filter& filter, unsigned width, unsigned height) :
+    filter_(filter), width_(width), height_(height),
     pixData_(height_, std::vector<Vector3d>(width_, Vector3d{0.0, 0.0, 0.0})),
     pixDataMax_(0.0)
 {
     texture_.clear(width_, height_);
     texture_.setAttribute(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     texture_.setAttribute(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
+
+void Canvas::setFilter(Filter& filter) {
+    filter_ = filter;
+}
+
+const Filter& Canvas::getFilter(void) const {
+    return filter_;
 }
 
 unsigned Canvas::getWidth(void) const {
@@ -47,10 +55,26 @@ const Texture& Canvas::getTexture(void) {
 void Canvas::addSample(const Vector2f& pos, const Vector3d& val) {
     std::lock_guard<std::mutex> lock(pixDataMutex_);
 
-    pixData_[(unsigned)pos[1]][(unsigned)pos[0]] += val;
-    for (auto i=0u; i<3; ++i)
-        if (pixData_[(unsigned)pos[1]][(unsigned)pos[0]][i] > pixDataMax_)
-            pixDataMax_ = pixData_[(unsigned)pos[1]][(unsigned)pos[0]][i];
+    int xMin = pos[0]-filter_.width_;
+    if (xMin < 0) xMin = 0;
+    int yMin = pos[1]-filter_.width_;
+    if (yMin < 0) yMin = 0;
+    int xMax= pos[0]+filter_.width_+1.0f;
+    if (xMax > (int)width_) xMax = width_;
+    int yMax= pos[1]+filter_.width_+1.0f;
+    if (yMax > (int)height_) yMax = height_;
+
+    for (auto y=yMin; y<yMax; ++y) {
+        for (auto x=xMin; x<xMax; ++x) {
+            if (sqrtf(powf(x+0.5f-pos[0],2.0f)+powf(y+0.5f-pos[1],2.0f)) > filter_.width_)
+                continue;
+
+            pixData_[y][x]+=filter_(pos[0], pos[1], x, x+1, y, y+1)*val;
+            for (auto i=0u; i<3; ++i)
+                if (pixData_[y][x][i] > pixDataMax_)
+                    pixDataMax_ = pixData_[y][x][i];
+        }
+    }
 
     pixDataDirty_ = true;
 }
@@ -97,9 +121,9 @@ void Canvas::saveToFile(const std::string& fileName) {
         for (auto x=0u; x<width_; ++x) {
             auto& p = pixData_[y][x];
             img.setPixel(x, height_ - y - 1,
-                         sf::Color((pixData_[y][x][0] / pixDataMax_)*255,
-                                   (pixData_[y][x][1] / pixDataMax_)*255,
-                                   (pixData_[y][x][2] / pixDataMax_)*255));
+                         sf::Color((p[0] / pixDataMax_)*255,
+                                   (p[1] / pixDataMax_)*255,
+                                   (p[2] / pixDataMax_)*255));
         }
     }
 

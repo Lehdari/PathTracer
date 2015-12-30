@@ -61,8 +61,11 @@ int main(void) {
                    {0.0f, 2.2f, 0.1f},
                    {0.0f, 1.0f, 0.0f} );*/
 
+    //  Filter
+    Filter filter(Filter::TYPE_GAUSSIAN, 3.0f);
+
     //  Canvas
-    Canvas canvas(400, 300);
+    Canvas canvas(filter, 400, 300);
 
     //  Renderer
     Renderer renderer(8);
@@ -114,7 +117,9 @@ int main(void) {
     keyboard.setKeyPressedFunction(sf::Keyboard::Space,
         std::bind(&render, std::ref(renderer), std::ref(camera), std::ref(scene),
                   &light, std::ref(canvas),
-                  std::ref(r), std::ref(showRender)));
+                  std::ref(r), std::ref(showRender), std::ref(filter)));
+    keyboard.setKeyPressedFunction(sf::Keyboard::Return,
+        std::bind(&toggleShowRender, std::ref(showRender)));
 
 
     // The main loop - ends as soon as the window is closed

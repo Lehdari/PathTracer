@@ -2,6 +2,7 @@
 #define CANVAS_HPP
 
 
+#include "Filter.hpp"
 #include "MathTypes.hpp"
 #include "Texture.hpp"
 #include "PixelBufferObject.hpp"
@@ -18,8 +19,11 @@ struct Sample {
 
 class Canvas {
 public:
-    Canvas(unsigned width, unsigned height);
+    Canvas(Filter& filter, unsigned width, unsigned height);
 
+    void setFilter(Filter& filter);
+
+    const Filter& getFilter(void) const;
     unsigned getWidth(void) const;
     unsigned getHeight(void) const;
 
@@ -31,6 +35,7 @@ public:
     void saveToFile(const std::string& fileName);
 
 private:
+    Filter& filter_;
     unsigned width_;
     unsigned height_;
 
