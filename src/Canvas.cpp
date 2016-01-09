@@ -5,7 +5,7 @@
 
 Canvas::Canvas(Filter& filter, unsigned width, unsigned height) :
     filter_(filter), width_(width), height_(height),
-    pixData_(height_, std::vector<Vector3d>(width_, Vector3d{0.0, 0.0, 0.0})),
+    pixData_(height_, std::vector<PixData>(width_, { {0.0, 0.0, 0.0}, 0.0 })),
     pixDataMax_(0.0)
 {
     texture_.clear(width_, height_);
@@ -37,9 +37,19 @@ const Texture& Canvas::getTexture(void) {
         if(ptr) {
             for (auto y=0u; y<height_; ++y) {
                 for (auto x=0u; x<width_; ++x) {
-                    ptr[(y*width_ + x)*4 + 0] = (pixData_[y][x][0] / pixDataMax_)*255;
-                    ptr[(y*width_ + x)*4 + 1] = (pixData_[y][x][1] / pixDataMax_)*255;
-                    ptr[(y*width_ + x)*4 + 2] = (pixData_[y][x][2] / pixDataMax_)*255;
+                    auto& p = pixData_[y][x];
+                    if (p.w > 0.0) {
+                        ptr[(y*width_ + x)*4 + 0] = (p.c[0] / (pixDataMax_*p.w))*255;
+                        ptr[(y*width_ + x)*4 + 1] = (p.c[1] / (pixDataMax_*p.w))*255;
+                        ptr[(y*width_ + x)*4 + 2] = (p.c[2] / (pixDataMax_*p.w))*255;
+                        if (x == pdmx_ && y == pdmy_)
+                            printf("Pix data max info:\n  pos: [%u, %u]\n  rgb: [%u, %u, %u]\n  c: [%0.2f, %0.2f, %0.2f]\n  w: %0.3f  pdm: %0.3f\n", x, y, ptr[(y*width_ + x)*4 + 0], ptr[(y*width_ + x)*4 + 1], ptr[(y*width_ + x)*4 + 2], p.c[0], p.c[1], p.c[2], p.w, pixDataMax_);
+                    }
+                    else {
+                        ptr[(y*width_ + x)*4 + 0] = 0;
+                        ptr[(y*width_ + x)*4 + 1] = 0;
+                        ptr[(y*width_ + x)*4 + 2] = 0;
+                    }
                     ptr[(y*400 + x)*4 + 3] = 255;
                 }
             }
@@ -69,10 +79,19 @@ void Canvas::addSample(const Vector2f& pos, const Vector3d& val) {
             if (sqrtf(powf(x+0.5f-pos[0],2.0f)+powf(y+0.5f-pos[1],2.0f)) > filter_.width_)
                 continue;
 
-            pixData_[y][x]+=filter_(pos[0], pos[1], x, x+1, y, y+1)*val;
+            float f = filter_(pos[0], pos[1], x, x+1, y, y+1);
+
+            pixData_[y][x].c += f*val;
+            pixData_[y][x].w += f;
+
             for (auto i=0u; i<3; ++i)
-                if (pixData_[y][x][i] > pixDataMax_)
-                    pixDataMax_ = pixData_[y][x][i];
+                if (pixData_[y][x].c[i]/pixData_[y][x].w > pixDataMax_) {
+                    pixDataMax_ = pixData_[y][x].c[i]/pixData_[y][x].w;
+                    auto& p = pixData_[y][x];
+                    pdmx_ = x;
+                    pdmy_ = y;
+                    printf("Pix data max info:\n  pos: [%u, %u]\n  c: [%0.2f, %0.2f, %0.2f]\n  w: %0.3f  pdm: %0.3f\n", x, y, p.c[0], p.c[1], p.c[2], p.w, pixDataMax_);
+                }
         }
     }
 
@@ -81,7 +100,7 @@ void Canvas::addSample(const Vector2f& pos, const Vector3d& val) {
 
 void Canvas::clear(void) {
     //samples_.clear();
-    pixData_ = std::vector<std::vector<Vector3d>>(height_, std::vector<Vector3d>(width_, Vector3d{0.0, 0.0, 0.0}));
+    pixData_ = std::vector<std::vector<PixData>>(height_, std::vector<PixData>(width_, { {0.0, 0.0, 0.0}, 0.0 }));
 }
 
 void Canvas::filter(/*Filter& filter, */float gamma) {
@@ -120,10 +139,12 @@ void Canvas::saveToFile(const std::string& fileName) {
     for (auto y=0u; y<height_; ++y) {
         for (auto x=0u; x<width_; ++x) {
             auto& p = pixData_[y][x];
-            img.setPixel(x, height_ - y - 1,
-                         sf::Color((p[0] / pixDataMax_)*255,
-                                   (p[1] / pixDataMax_)*255,
-                                   (p[2] / pixDataMax_)*255));
+            if (p.w > 0.0) {
+                img.setPixel(x, height_ - y - 1,
+                             sf::Color((p.c[0] / (pixDataMax_*p.w))*255,
+                                       (p.c[1] / (pixDataMax_*p.w))*255,
+                                       (p.c[2] / (pixDataMax_*p.w))*255));
+            }
         }
     }
 

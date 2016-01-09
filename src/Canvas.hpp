@@ -17,6 +17,11 @@ struct Sample {
     Vector3d v; //  value
 };
 
+struct PixData {
+    Vector3d c; //  accumulated color data
+    double w;   //  weight
+};
+
 class Canvas {
 public:
     Canvas(Filter& filter, unsigned width, unsigned height);
@@ -39,9 +44,10 @@ private:
     unsigned width_;
     unsigned height_;
 
-    //  double-precision HDR pixel data
-    std::vector<std::vector<Vector3d>> pixData_;
+    //  pixel data
+    std::vector<std::vector<PixData>> pixData_;
     double pixDataMax_;
+    int pdmx_, pdmy_;
     bool pixDataDirty_;
     std::mutex pixDataMutex_;
 
