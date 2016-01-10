@@ -38,6 +38,7 @@ public:
     void clear(void);
     void filter(/*Filter& filter, */float gamma);
     void saveToFile(const std::string& fileName);
+    void normalize(void);
 
 private:
     Filter& filter_;
@@ -46,14 +47,13 @@ private:
 
     //  pixel data
     std::vector<std::vector<PixData>> pixData_;
-    double pixDataMax_;
+    double normConst_;  //  normalization constant
     int pdmx_, pdmy_;
     bool pixDataDirty_;
     std::mutex pixDataMutex_;
 
     Texture texture_;
     PixelBufferObject pixelBuffer_;
-
 };
 
 

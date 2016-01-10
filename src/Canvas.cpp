@@ -6,7 +6,7 @@
 Canvas::Canvas(Filter& filter, unsigned width, unsigned height) :
     filter_(filter), width_(width), height_(height),
     pixData_(height_, std::vector<PixData>(width_, { {0.0, 0.0, 0.0}, 0.0 })),
-    pixDataMax_(0.0)
+    normConst_(1.0)
 {
     texture_.clear(width_, height_);
     texture_.setAttribute(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -39,11 +39,11 @@ const Texture& Canvas::getTexture(void) {
                 for (auto x=0u; x<width_; ++x) {
                     auto& p = pixData_[y][x];
                     if (p.w > 0.0) {
-                        ptr[(y*width_ + x)*4 + 0] = (p.c[0] / (pixDataMax_*p.w))*255;
-                        ptr[(y*width_ + x)*4 + 1] = (p.c[1] / (pixDataMax_*p.w))*255;
-                        ptr[(y*width_ + x)*4 + 2] = (p.c[2] / (pixDataMax_*p.w))*255;
-                        if (x == pdmx_ && y == pdmy_)
-                            printf("Pix data max info:\n  pos: [%u, %u]\n  rgb: [%u, %u, %u]\n  c: [%0.2f, %0.2f, %0.2f]\n  w: %0.3f  pdm: %0.3f\n", x, y, ptr[(y*width_ + x)*4 + 0], ptr[(y*width_ + x)*4 + 1], ptr[(y*width_ + x)*4 + 2], p.c[0], p.c[1], p.c[2], p.w, pixDataMax_);
+                        ptr[(y*width_ + x)*4 + 0] = (p.c[0] / (normConst_*p.w))*255;
+                        ptr[(y*width_ + x)*4 + 1] = (p.c[1] / (normConst_*p.w))*255;
+                        ptr[(y*width_ + x)*4 + 2] = (p.c[2] / (normConst_*p.w))*255;
+                        //if (x == pdmx_ && y == pdmy_)
+                            //printf("Pix data max info:\n  pos: [%u, %u]\n  rgb: [%u, %u, %u]\n  c: [%0.2f, %0.2f, %0.2f]\n  w: %0.3f  pdm: %0.3f\n", x, y, ptr[(y*width_ + x)*4 + 0], ptr[(y*width_ + x)*4 + 1], ptr[(y*width_ + x)*4 + 2], p.c[0], p.c[1], p.c[2], p.w, normConst_);
                     }
                     else {
                         ptr[(y*width_ + x)*4 + 0] = 0;
@@ -83,15 +83,6 @@ void Canvas::addSample(const Vector2f& pos, const Vector3d& val) {
 
             pixData_[y][x].c += f*val;
             pixData_[y][x].w += f;
-
-            for (auto i=0u; i<3; ++i)
-                if (pixData_[y][x].c[i]/pixData_[y][x].w > pixDataMax_) {
-                    pixDataMax_ = pixData_[y][x].c[i]/pixData_[y][x].w;
-                    auto& p = pixData_[y][x];
-                    pdmx_ = x;
-                    pdmy_ = y;
-                    printf("Pix data max info:\n  pos: [%u, %u]\n  c: [%0.2f, %0.2f, %0.2f]\n  w: %0.3f  pdm: %0.3f\n", x, y, p.c[0], p.c[1], p.c[2], p.w, pixDataMax_);
-                }
         }
     }
 
@@ -141,12 +132,23 @@ void Canvas::saveToFile(const std::string& fileName) {
             auto& p = pixData_[y][x];
             if (p.w > 0.0) {
                 img.setPixel(x, height_ - y - 1,
-                             sf::Color((p.c[0] / (pixDataMax_*p.w))*255,
-                                       (p.c[1] / (pixDataMax_*p.w))*255,
-                                       (p.c[2] / (pixDataMax_*p.w))*255));
+                             sf::Color((p.c[0] / (normConst_*p.w))*255,
+                                       (p.c[1] / (normConst_*p.w))*255,
+                                       (p.c[2] / (normConst_*p.w))*255));
             }
         }
     }
 
     img.saveToFile(fileName);
+}
+
+void Canvas::normalize(void) {
+    std::lock_guard<std::mutex> lock(pixDataMutex_);
+
+    normConst_ = 0.0;
+    for (auto y=0u; y<height_; ++y)
+        for (auto x=0u; x<width_; ++x)
+            for (auto i=0u; i<3; ++i)
+                if (pixData_[y][x].c[i]/pixData_[y][x].w > normConst_)
+                    normConst_ = pixData_[y][x].c[i]/pixData_[y][x].w;
 }

@@ -98,7 +98,7 @@ void Renderer::renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light,
     unsigned viewW = canvas.getWidth();
     unsigned viewH = canvas.getHeight();
 
-    const unsigned nSamples = 64;
+    const unsigned nSamples = 16;
     Sampler sampler(Sampler::TYPE_JITTERED, nSamples);
     Ray ray;
 
@@ -118,6 +118,7 @@ void Renderer::renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light,
         }
         //printf("%0.3f%%\r", (float)((y-yMin)*100)/(yMax-yMin));
     }
+    canvas.normalize();
     //printf("\n");
 }
 
