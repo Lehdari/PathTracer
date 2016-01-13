@@ -17,6 +17,7 @@ void render(Renderer& renderer, BasicCamera& camera, Scene& scene,
             std::default_random_engine& r, bool& showRender,
             Filter& filter);
 void toggleShowRender(bool& showRender);
+void saveRenderToFile(Canvas& canvas, const std::string& fileName);
 
 
 #endif // EVENTFUNCTIONS_HPP

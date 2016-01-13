@@ -26,3 +26,7 @@ void render(Renderer& renderer, BasicCamera& camera, Scene& scene,
 void toggleShowRender(bool& showRender) {
     showRender = !showRender;
 }
+
+void saveRenderToFile(Canvas& canvas, const std::string& fileName) {
+    canvas.saveToFile(fileName);
+}

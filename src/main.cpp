@@ -120,6 +120,8 @@ int main(void) {
                   std::ref(r), std::ref(showRender), std::ref(filter)));
     keyboard.setKeyPressedFunction(sf::Keyboard::Return,
         std::bind(&toggleShowRender, std::ref(showRender)));
+    keyboard.setKeyPressedFunction(sf::Keyboard::P,
+        std::bind(&saveRenderToFile, std::ref(canvas), "render.png"));
 
 
     // The main loop - ends as soon as the window is closed
