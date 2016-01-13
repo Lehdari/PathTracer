@@ -47,7 +47,7 @@ int main(void) {
     //PointLight light({0.0f, 3.25f, -0.0f}, {1.2f, 1.15f, 1.0f});
 
     //  Camera
-    BasicCamera camera(PI*0.5f, 4.0f/3.0f, 0.2f, 100.0f);
+    BasicCamera camera(PI*0.5f, 4.0f/3.0f, 0.01f, 100.0f);
     //  cornell 1
     /*camera.lookAt( {0.7f, -0.8f, -0.95f},
                    {0.0f, -0.5f, 0.0f},
@@ -62,7 +62,7 @@ int main(void) {
                    {0.0f, 1.0f, 0.0f} );*/
 
     //  Filter
-    Filter filter(Filter::TYPE_GAUSSIAN, 3.0f);
+    Filter filter(Filter::TYPE_GAUSSIAN, 5.0f);
 
     //  Canvas
     Canvas canvas(filter, 400, 300);

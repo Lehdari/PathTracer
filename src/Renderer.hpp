@@ -118,6 +118,7 @@ void Renderer::renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light,
         }
         //printf("%0.3f%%\r", (float)((y-yMin)*100)/(yMax-yMin));
     }
+    canvas.normalize();
     //printf("\n");
 }
 
