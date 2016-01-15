@@ -20,6 +20,10 @@ struct Sample {
 struct PixData {
     Vector3d c; //  accumulated color data
     double w;   //  weight
+
+    //  auxiliary data
+    Vector3f dx, dy;   //  derivatives
+    float e;    //  estimated error value
 };
 
 class Canvas {
@@ -34,11 +38,13 @@ public:
 
     const Texture& getTexture(void);
 
-    void addSample(const Vector2f& pos, const Vector3d& val);
+    void addSample(const Vector2f& pos, const Vector3d& val, float filterWidth);
     void clear(void);
-    void filter(/*Filter& filter, */float gamma);
     void saveToFile(const std::string& fileName);
     void normalize(void);
+    void generateAuxiliarMaps(void);
+
+    float getSamplingProbability(unsigned x, unsigned y);
 
 private:
     Filter& filter_;
@@ -48,7 +54,7 @@ private:
     //  pixel data
     std::vector<std::vector<PixData>> pixData_;
     double normConst_;  //  normalization constant
-    int pdmx_, pdmy_;
+    double maxWeight_;
     bool pixDataDirty_;
     std::mutex pixDataMutex_;
 

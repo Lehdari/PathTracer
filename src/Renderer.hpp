@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <thread>
+#include <atomic>
 
 
 #define RAY_EPS 0.00001f
@@ -32,8 +33,10 @@ public:
 protected:
     unsigned maxThreads_;
     std::vector<std::thread> threads_;
-    std::vector<bool> threadRunning_;
+    std::atomic<unsigned> threadsRunning_;
     std::mutex threadsMutex_;
+
+    std::atomic<long long unsigned> castedPaths_;
 
     /*template<typename T_Camera>
     void dispatchThread(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
@@ -52,19 +55,24 @@ protected:
 template<typename T_Camera>
 void Renderer::render(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
                 std::default_random_engine& r) {
-    for (auto& thread : threads_)
-        thread.join();
-    threads_.clear();
+    //for (auto& thread : threads_)
+        //thread.join();
+    //threads_.clear();
 
-    printf("Launching threads..\n");
-    for (auto i=0u; i<maxThreads_; ++i) {
+    if (threadsRunning_ == 0) {
+        //castedPaths_ = 0;
 
-        unsigned yMin = ceil(((float)canvas.getHeight() / maxThreads_)*i);
-        unsigned yMax = ceil(((float)canvas.getHeight() / maxThreads_)*(i+1));
+        printf("Launching threads..\n");
+        for (auto i=0u; i<maxThreads_; ++i) {
 
-        threads_.emplace_back([yMin, yMax, &camera, &scene, light, &canvas, &r, this]
-                              { renderAsync(camera, scene, light, canvas, r,
-                                            0, canvas.getWidth(), yMin, yMax); } );
+            unsigned yMin = ceil(((float)canvas.getHeight() / maxThreads_)*i);
+            unsigned yMax = ceil(((float)canvas.getHeight() / maxThreads_)*(i+1));
+
+            std::thread t([yMin, yMax, &camera, &scene, light, &canvas, &r, this]
+                                  { renderAsync(camera, scene, light, canvas, r,
+                                                0, canvas.getWidth(), yMin, yMax); } );
+            t.detach();
+        }
     }
 }
 
@@ -95,6 +103,8 @@ template<typename T_Camera>
 void Renderer::renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
                            std::default_random_engine& r,
                            unsigned xMin, unsigned xMax, unsigned yMin, unsigned yMax) {
+    threadsRunning_++;
+
     unsigned viewW = canvas.getWidth();
     unsigned viewH = canvas.getHeight();
 
@@ -105,21 +115,35 @@ void Renderer::renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light,
     for (auto y=yMin; y<yMax; ++y) {
         for (auto x=xMin; x<xMax; ++x) {
             for (auto i=0u; i<nSamples; ++i) {
+                float sampleProb = canvas.getSamplingProbability(x, y);
+                if (canvas.getSamplingProbability(x, y)*1024 < r()%1024)
+                    continue;
+
                 float rayX, rayY;
                 sampler.drawSample(rayX, rayY, i, r);
                 rayX += x;
                 rayY += y;
                 ray = camera.generateRay(rayX, rayY, viewW, viewH);
                 Vector3d pathLight = bounce(scene, light, ray, r, 4);
+                castedPaths_++;
 
+                float f = 5.0f/(5.25f*sampleProb + 1.0f) - 0.75;
+                float fr = (r()%1024)/1023.0f;
                 canvas.addSample({rayX, rayY},
-                                 {pathLight[0], pathLight[1], pathLight[2]});
+                                 {pathLight[0], pathLight[1], pathLight[2]}, 0.75f+f*fr);
             }
         }
         //printf("%0.3f%%\r", (float)((y-yMin)*100)/(yMax-yMin));
     }
-    canvas.normalize();
-    //printf("\n");
+
+    threadsRunning_--;
+    printf("Threads running: %u\n", (unsigned)threadsRunning_);
+
+    if (threadsRunning_ == 0) {
+        printf("Casted paths: %llu\n", (long long unsigned)castedPaths_);
+        canvas.normalize();
+        canvas.generateAuxiliarMaps();
+    }
 }
 
 

@@ -62,7 +62,7 @@ int main(void) {
                    {0.0f, 1.0f, 0.0f} );*/
 
     //  Filter
-    Filter filter(Filter::TYPE_GAUSSIAN, 5.0f);
+    Filter filter(Filter::TYPE_TENT, 5.00f);
 
     //  Canvas
     Canvas canvas(filter, 400, 300);

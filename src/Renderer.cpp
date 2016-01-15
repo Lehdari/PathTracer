@@ -36,7 +36,8 @@ namespace { //  some helper stuff
 
 Renderer::Renderer(unsigned maxThreads) :
     maxThreads_(maxThreads),
-    threadRunning_(maxThreads_, false)
+    threadsRunning_(0),
+    castedPaths_(0ull)
 {}
 
 Renderer::~Renderer(void) {
