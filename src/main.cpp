@@ -62,7 +62,7 @@ int main(void) {
                    {0.0f, 1.0f, 0.0f} );*/
 
     //  Filter
-    Filter filter(Filter::TYPE_TENT, 5.00f);
+    Filter filter(Filter::TYPE_GAUSSIAN, 2.4f);
 
     //  Canvas
     Canvas canvas(filter, 400, 300);
@@ -120,8 +120,6 @@ int main(void) {
                   std::ref(r), std::ref(showRender), std::ref(filter)));
     keyboard.setKeyPressedFunction(sf::Keyboard::Return,
         std::bind(&toggleShowRender, std::ref(showRender)));
-    keyboard.setKeyPressedFunction(sf::Keyboard::P,
-        std::bind(&saveRenderToFile, std::ref(canvas), "render.png"));
 
 
     // The main loop - ends as soon as the window is closed
