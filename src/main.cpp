@@ -62,13 +62,13 @@ int main(void) {
                    {0.0f, 1.0f, 0.0f} );*/
 
     //  Filter
-    Filter filter(Filter::TYPE_GAUSSIAN, 3.0f);
+    Filter filter(Filter::TYPE_DIRACDELTA, 1.0f);
 
     //  Canvas
     Canvas canvas(filter, 400, 300);
 
     //  Renderer
-    Renderer renderer(8);
+    Renderer renderer;
 
     //  Mesh
     Mesh mesh;

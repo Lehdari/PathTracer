@@ -17,7 +17,7 @@
 
 class Renderer {
 public:
-    Renderer(unsigned maxThreads);
+    Renderer(void);
     ~Renderer(void);
 
     Renderer(const Renderer& other)             = delete;
@@ -30,18 +30,8 @@ public:
                 std::default_random_engine& r);
 
 protected:
-    unsigned maxThreads_;
-    std::vector<std::thread> threads_;
-    std::vector<bool> threadRunning_;
-    std::mutex threadsMutex_;
-
-    /*template<typename T_Camera>
-    void dispatchThread(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
-                        std::default_random_engine& r,
-                        unsigned xMin, unsigned xMax, unsigned yMin, unsigned yMax);*/
-
     template<typename T_Camera>
-    void renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
+    void renderPatch(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
                      std::default_random_engine& r,
                      unsigned xMin, unsigned xMax, unsigned yMin, unsigned yMax);
     Vector3d bounce(Scene& scene, Light* light, Ray& ray,
@@ -52,19 +42,20 @@ protected:
 template<typename T_Camera>
 void Renderer::render(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
                 std::default_random_engine& r) {
-    for (auto& thread : threads_)
-        thread.join();
-    threads_.clear();
+    unsigned viewW = canvas.getWidth();
+    unsigned viewH = canvas.getHeight();
 
-    printf("Launching threads..\n");
-    for (auto i=0u; i<maxThreads_; ++i) {
+    printf("Rendering..\n");
+    unsigned n = 0;
+    #pragma omp parallel for
+    for (auto y=0u; y<viewH; ++y) {
+        renderPatch(camera, scene, light, canvas, r, 0, viewW, y, y+1);
 
-        unsigned yMin = ceil(((float)canvas.getHeight() / maxThreads_)*i);
-        unsigned yMax = ceil(((float)canvas.getHeight() / maxThreads_)*(i+1));
-
-        threads_.emplace_back([yMin, yMax, &camera, &scene, light, &canvas, &r, this]
-                              { renderAsync(camera, scene, light, canvas, r,
-                                            0, canvas.getWidth(), yMin, yMax); } );
+        #pragma omp critical
+        {
+            ++n;
+            printf("%u/%u\r", n, viewH);
+        }
     }
 }
 
@@ -92,7 +83,7 @@ void Renderer::dispatchThread(Camera<T_Camera>& camera, Scene& scene, Light* lig
 }*/
 
 template<typename T_Camera>
-void Renderer::renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
+void Renderer::renderPatch(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
                            std::default_random_engine& r,
                            unsigned xMin, unsigned xMax, unsigned yMin, unsigned yMax) {
     unsigned viewW = canvas.getWidth();
@@ -111,7 +102,6 @@ void Renderer::renderAsync(Camera<T_Camera>& camera, Scene& scene, Light* light,
                 rayY += y;
                 ray = camera.generateRay(rayX, rayY, viewW, viewH);
                 Vector3d pathLight = bounce(scene, light, ray, r, 4);
-
                 canvas.addSample({rayX, rayY},
                                  {pathLight[0], pathLight[1], pathLight[2]});
             }

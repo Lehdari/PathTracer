@@ -34,19 +34,14 @@ namespace { //  some helper stuff
     }
 }
 
-Renderer::Renderer(unsigned maxThreads) :
-    maxThreads_(maxThreads),
-    threadRunning_(maxThreads_, false)
+Renderer::Renderer(void)
 {}
 
 Renderer::~Renderer(void) {
-    for (auto& thread : threads_)
-        if (thread.joinable())
-            thread.join();
 }
 
 Vector3d Renderer::bounce(Scene& scene, Light* light, Ray& ray,
-                             std::default_random_engine& r, unsigned nBounces) const {
+                          std::default_random_engine& r, unsigned nBounces) const {
     Vector3d lightOut{0.0, 0.0, 0.0};
     Hit hit = scene.traceRay(ray);
 

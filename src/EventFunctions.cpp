@@ -18,9 +18,9 @@ void render(Renderer& renderer, BasicCamera& camera, Scene& scene,
     if (!showRender)
         showRender = true;
 
-    if (filter.getWidth() > 0.85f)
-        filter.setWidth(filter.getWidth()*0.8f);
-    std::cout << "filter width: " << filter.getWidth() << std::endl;
+    //if (filter.getWidth() > 0.85f)
+    //    filter.setWidth(filter.getWidth()*0.8f);
+    //std::cout << "filter width: " << filter.getWidth() << std::endl;
 }
 
 void toggleShowRender(bool& showRender) {
