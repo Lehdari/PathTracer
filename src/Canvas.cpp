@@ -52,24 +52,31 @@ const Texture& Canvas::getTexture(void) {
     return texture_;
 }
 
-void Canvas::addSample(const Vector2f& pos, const Vector3d& val) {
+void Canvas::addSample(const Sample& sample) {
     std::lock_guard<std::mutex> lock(pixDataMutex_);
 
-    int xMin = pos[0]-filter_.width_;
+    float px, py;
+    sample.getPos(px, py);
+
+    Vector3d val;
+    sample.getCol(val);
+
+    int xMin = px-filter_.width_;
     if (xMin < 0) xMin = 0;
-    int yMin = pos[1]-filter_.width_;
+    int yMin = py-filter_.width_;
     if (yMin < 0) yMin = 0;
-    int xMax= pos[0]+filter_.width_+1.0f;
+    int xMax= px+filter_.width_+1.0f;
     if (xMax > (int)width_) xMax = width_;
-    int yMax= pos[1]+filter_.width_+1.0f;
+    int yMax= py+filter_.width_+1.0f;
     if (yMax > (int)height_) yMax = height_;
 
     for (auto y=yMin; y<yMax; ++y) {
         for (auto x=xMin; x<xMax; ++x) {
-            if (sqrtf(powf(x+0.5f-pos[0],2.0f)+powf(y+0.5f-pos[1],2.0f)) > filter_.width_)
+            if (sqrtf(powf(x+0.5f-px,2.0f)+powf(y+0.5f-py,2.0f)) > filter_.width_)
                 continue;
 
-            pixData_[y][x]+=filter_(pos[0], pos[1], x, x+1, y, y+1)*val;
+            pixData_[y][x]+=filter_(px, py, x, x+1, y, y+1)*val;
+            //  max pix value for normalization
             for (auto i=0u; i<3; ++i)
                 if (pixData_[y][x][i] > pixDataMax_)
                     pixDataMax_ = pixData_[y][x][i];

@@ -6,16 +6,12 @@
 #include "MathTypes.hpp"
 #include "Texture.hpp"
 #include "PixelBufferObject.hpp"
+#include "Sample.hpp"
 
 #include <string>
 #include <vector>
 #include <mutex>
 
-
-struct Sample {
-    Vector2f p; //  position on canvas
-    Vector3d v; //  value
-};
 
 class Canvas {
 public:
@@ -29,7 +25,7 @@ public:
 
     const Texture& getTexture(void);
 
-    void addSample(const Vector2f& pos, const Vector3d& val);
+    void addSample(const Sample& sample);
     void clear(void);
     void filter(/*Filter& filter, */float gamma);
     void saveToFile(const std::string& fileName);

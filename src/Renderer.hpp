@@ -9,8 +9,6 @@
 #include "Sampler.hpp"
 
 #include <vector>
-#include <thread>
-
 
 #define RAY_EPS 0.00001f
 
@@ -102,8 +100,9 @@ void Renderer::renderPatch(Camera<T_Camera>& camera, Scene& scene, Light* light,
                 rayY += y;
                 ray = camera.generateRay(rayX, rayY, viewW, viewH);
                 Vector3d pathLight = bounce(scene, light, ray, r, 4);
-                canvas.addSample({rayX, rayY},
-                                 {pathLight[0], pathLight[1], pathLight[2]});
+                Sample s({rayX, rayY},
+                         {pathLight[0], pathLight[1], pathLight[2]});
+                canvas.addSample(s);
             }
         }
         //printf("%0.3f%%\r", (float)((y-yMin)*100)/(yMax-yMin));
