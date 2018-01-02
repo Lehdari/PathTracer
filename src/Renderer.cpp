@@ -50,7 +50,8 @@ Vector3d Renderer::bounce(Scene& scene, Light* light, Ray& ray,
 
         //  BRDF
         Vector3f leaving, incoming;
-        float brdf;
+        double brdf;
+        double prob = 1.0f / PI;
 
         if (nBounces > 0) { //  recursive bounce
             leaving = -ray.d;
@@ -64,7 +65,7 @@ Vector3d Renderer::bounce(Scene& scene, Light* light, Ray& ray,
             brdf = vh.n.dot(-incoming);
             if (brdf < 0.0f) brdf = 0.0f;
 
-            lightOut = brdf * bounce(scene, light, ray, r, nBounces-1);
+            lightOut = brdf * prob * bounce(scene, light, ray, r, nBounces-1);
         }
 
         //  Shadow ray
@@ -79,7 +80,7 @@ Vector3d Renderer::bounce(Scene& scene, Light* light, Ray& ray,
             brdf = vh.n.dot(-ls.ray.d);
             if (brdf < 0.0f) brdf = 0.0f;
 
-            lightOut += brdf * Vector3d{a*ls.col[0], a*ls.col[1], a*ls.col[2]};
+            lightOut += brdf * a * ls.col; //Vector3d{a*ls.col[0], a*ls.col[1], a*ls.col[2]};
         }
     }
 

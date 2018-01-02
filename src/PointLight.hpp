@@ -9,13 +9,13 @@
 
 class PointLight : public Light {
 public:
-    PointLight(const Vector3f& position, const Vector3f& color);
+    PointLight(const Vector3f& position, const Vector3d& color);
 
     LightSample drawSample(const Vector3f& p);
 
 private:
     Vector3f position_;
-    Vector3f color_;
+    Vector3d color_;
     std::mutex mutex_;
 };
 

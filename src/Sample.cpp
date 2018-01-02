@@ -1,10 +1,9 @@
 #include "Sample.hpp"
 
 
-Sample::Sample(const Vector2f& pos, const Vector3d& col, double prob) :
+Sample::Sample(const Vector2f& pos, const Vector3d& col) :
     pos_    (pos),
-    col_    (col),
-    prob_   (prob)
+    col_    (col)
 {
 }
 
@@ -16,5 +15,5 @@ void Sample::getPos(float& x, float& y) const
 
 void Sample::getCol(Vector3d& col) const
 {
-    col = col_ / prob_;
+    col = col_;
 }

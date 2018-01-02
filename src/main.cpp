@@ -42,7 +42,8 @@ int main(void) {
 
     //  Light
     //  cornell
-    PointLight light({0.55f, -0.25f, -0.6f}, {1.2f, 1.15f, 1.0f});
+    PointLight light1({0.55f, -0.25f, -0.6f}, {1.2f, 1.15f, 1.0f});
+    PointLight light2({-0.55f, -0.25f, 0.6f}, {1.2f, 1.15f, 1.0f});
     //  hub
     //PointLight light({0.0f, 3.25f, -0.0f}, {1.2f, 1.15f, 1.0f});
 
@@ -62,7 +63,7 @@ int main(void) {
                    {0.0f, 1.0f, 0.0f} );*/
 
     //  Filter
-    Filter filter(Filter::TYPE_DIRACDELTA, 1.0f);
+    Filter filter(Filter::TYPE_GAUSSIAN, 0.6f);
 
     //  Canvas
     Canvas canvas(filter, 400, 300);

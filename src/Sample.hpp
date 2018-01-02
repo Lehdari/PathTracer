@@ -7,7 +7,7 @@
 
 class Sample {
 public:
-    Sample(const Vector2f& pos, const Vector3d& col, double prob = 1.0f);
+    Sample(const Vector2f& pos, const Vector3d& col);
 
     void getPos(float& x, float& y) const;
     void getCol(Vector3d& col) const;
@@ -15,7 +15,6 @@ public:
 private:
     const Vector2f  pos_;
     Vector3d        col_;
-    double          prob_;
 };
 
 

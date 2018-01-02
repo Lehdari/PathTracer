@@ -7,11 +7,11 @@
 
 struct LightSample {
     Ray ray;        //  ray from light
-    Vector3f col;   //  color(and brightness) of the light
+    Vector3d col;   //  color(and brightness) of the light
 };
 
 
-class Light {
+class Light {   //  TODO convert to CRTP interface?
 public:
     //  draw sample from given point
     virtual LightSample drawSample(const Vector3f& p) = 0;
