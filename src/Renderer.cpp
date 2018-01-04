@@ -40,7 +40,7 @@ Renderer::Renderer(void)
 Renderer::~Renderer(void) {
 }
 
-Vector3d Renderer::bounce(Scene& scene, Light* light, Ray& ray,
+Vector3d Renderer::bounce(Scene& scene, Ray& ray,
                           std::default_random_engine& r, unsigned nBounces) const {
     Vector3d lightOut{0.0, 0.0, 0.0};
     Hit hit = scene.traceRay(ray);
@@ -51,7 +51,8 @@ Vector3d Renderer::bounce(Scene& scene, Light* light, Ray& ray,
         //  BRDF
         Vector3f leaving, incoming;
         double brdf;
-        double prob = 1.0f / PI;
+        //double prob = 1.0f / PI;
+        double invProb = PI;
 
         if (nBounces > 0) { //  recursive bounce
             leaving = -ray.d;
@@ -65,22 +66,25 @@ Vector3d Renderer::bounce(Scene& scene, Light* light, Ray& ray,
             brdf = vh.n.dot(-incoming);
             if (brdf < 0.0f) brdf = 0.0f;
 
-            lightOut = brdf * prob * bounce(scene, light, ray, r, nBounces-1);
+            lightOut = brdf * bounce(scene, ray, r, nBounces-1);
         }
 
-        //  Shadow ray
-        LightSample ls = light->drawSample(vh.p);
-        float lt = ls.ray.t;
+        //  Shadow rays
+        auto& lights = scene.getLights();
+        for (auto& l : lights) {
+            LightSample ls = l->drawSample(vh.p);
+            float lt = ls.ray.t;
 
-        scene.traceRay(ls.ray);
+            scene.traceRay(ls.ray);
 
-        if (ls.ray.t >= lt - RAY_EPS) {
-            float a = 1.0f / (ls.ray.t*ls.ray.t);
+            if (ls.ray.t >= lt - RAY_EPS) {
+                float a = 1.0f / (ls.ray.t*ls.ray.t);
 
-            brdf = vh.n.dot(-ls.ray.d);
-            if (brdf < 0.0f) brdf = 0.0f;
+                brdf = vh.n.dot(-ls.ray.d);
+                if (brdf < 0.0f) brdf = 0.0f;
 
-            lightOut += brdf * a * ls.col; //Vector3d{a*ls.col[0], a*ls.col[1], a*ls.col[2]};
+                lightOut += brdf * a * ls.col; //Vector3d{a*ls.col[0], a*ls.col[1], a*ls.col[2]};
+            }
         }
     }
 

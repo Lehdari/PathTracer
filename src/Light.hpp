@@ -11,10 +11,10 @@ struct LightSample {
 };
 
 
-class Light {   //  TODO convert to CRTP interface?
+class Light {
 public:
     //  draw sample from given point
-    virtual LightSample drawSample(const Vector3f& p) = 0;
+    virtual LightSample drawSample(const Vector3f& p) const = 0;
 };
 
 

@@ -24,21 +24,21 @@ public:
     Renderer& operator=(Renderer&& other)       = delete;
 
     template<typename T_Camera>
-    void render(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
+    void render(Camera<T_Camera>& camera, Scene& scene, Canvas& canvas,
                 std::default_random_engine& r);
 
 protected:
     template<typename T_Camera>
-    void renderPatch(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
+    void renderPatch(Camera<T_Camera>& camera, Scene& scene, Canvas& canvas,
                      std::default_random_engine& r,
                      unsigned xMin, unsigned xMax, unsigned yMin, unsigned yMax);
-    Vector3d bounce(Scene& scene, Light* light, Ray& ray,
+    Vector3d bounce(Scene& scene, Ray& ray,
                     std::default_random_engine& r, unsigned nBounces = 0) const;
 };
 
 
 template<typename T_Camera>
-void Renderer::render(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
+void Renderer::render(Camera<T_Camera>& camera, Scene& scene, Canvas& canvas,
                 std::default_random_engine& r) {
     unsigned viewW = canvas.getWidth();
     unsigned viewH = canvas.getHeight();
@@ -47,7 +47,7 @@ void Renderer::render(Camera<T_Camera>& camera, Scene& scene, Light* light, Canv
     unsigned n = 0;
     #pragma omp parallel for
     for (auto y=0u; y<viewH; ++y) {
-        renderPatch(camera, scene, light, canvas, r, 0, viewW, y, y+1);
+        renderPatch(camera, scene, canvas, r, 0, viewW, y, y+1);
 
         #pragma omp critical
         {
@@ -81,7 +81,7 @@ void Renderer::dispatchThread(Camera<T_Camera>& camera, Scene& scene, Light* lig
 }*/
 
 template<typename T_Camera>
-void Renderer::renderPatch(Camera<T_Camera>& camera, Scene& scene, Light* light, Canvas& canvas,
+void Renderer::renderPatch(Camera<T_Camera>& camera, Scene& scene, Canvas& canvas,
                            std::default_random_engine& r,
                            unsigned xMin, unsigned xMax, unsigned yMin, unsigned yMax) {
     unsigned viewW = canvas.getWidth();
@@ -99,7 +99,7 @@ void Renderer::renderPatch(Camera<T_Camera>& camera, Scene& scene, Light* light,
                 rayX += x;
                 rayY += y;
                 ray = camera.generateRay(rayX, rayY, viewW, viewH);
-                Vector3d pathLight = bounce(scene, light, ray, r, 4);
+                Vector3d pathLight = bounce(scene, ray, r, 4);
                 Sample s({rayX, rayY},
                          {pathLight[0], pathLight[1], pathLight[2]});
                 canvas.addSample(s);

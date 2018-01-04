@@ -5,9 +5,11 @@
 #include "Triangle.hpp"
 #include "Ray.hpp"
 #include "Hit.hpp"
+#include "Light.hpp"
 
 #include <vector>
 #include <mutex>
+#include <memory>
 
 
 class Scene {
@@ -17,11 +19,13 @@ public:
 
     void loadFromObj(const std::string& fileName);
 
-    //void addLight(Light* light);
+    template<typename T_Light>
+    void addLight(T_Light&& light);
 
     Hit traceRay(Ray& ray);
 
     const std::vector<Triangle>& getTriangles(void);
+    const std::vector<std::unique_ptr<Light>>&   getLights(void);
 
 private:
     //  triangle data
@@ -34,7 +38,17 @@ private:
     bool usingIndexing_;
 
     Hit intersectRay(Ray& ray, const Triangle& triangle) const;
+
+    //  light data
+    std::vector<std::unique_ptr<Light>>  lights_;
 };
+
+
+template<typename T_Light>
+void Scene::addLight(T_Light&& light)
+{
+    lights_.emplace_back(new T_Light(light));
+}
 
 
 #endif  //  SCENE_HPP

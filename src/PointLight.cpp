@@ -5,7 +5,7 @@ PointLight::PointLight(const Vector3f& position, const Vector3d& color) :
     position_(position), color_(color)
 {}
 
-LightSample PointLight::drawSample(const Vector3f& p) {
+LightSample PointLight::drawSample(const Vector3f& p) const {
     Vector3f pd = p-position_;
 
     LightSample s;

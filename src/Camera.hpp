@@ -2,8 +2,7 @@
 #define CAMERA_HPP
 
 
-#include "Scene.hpp"
-#include "Light.hpp"
+#include "Ray.hpp"
 
 
 template<typename T_Derived>

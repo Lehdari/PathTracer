@@ -42,21 +42,18 @@ int main(void) {
 
     //  Light
     //  cornell
-    PointLight light1({0.55f, -0.25f, -0.6f}, {1.2f, 1.15f, 1.0f});
-    PointLight light2({-0.55f, -0.25f, 0.6f}, {1.2f, 1.15f, 1.0f});
+    //scene.addLight(PointLight({0.55f, -0.25f, -0.6f}, {1.2f, 1.15f, 1.0f}));
+    scene.addLight(PointLight({0.05f, -0.5f, 0.5f}, {0.1f, 0.3f, 0.5f}));
+    scene.addLight(PointLight({0.0f, 1.05f, 0.0f}, {1.3f, 1.0f, 0.8f}));
     //  hub
     //PointLight light({0.0f, 3.25f, -0.0f}, {1.2f, 1.15f, 1.0f});
 
     //  Camera
     BasicCamera camera(PI*0.5f, 4.0f/3.0f, 0.2f, 100.0f);
     //  cornell 1
-    /*camera.lookAt( {0.7f, -0.8f, -0.95f},
-                   {0.0f, -0.5f, 0.0f},
-                   {0.0f, 1.0f, 0.0f} );*/
+    camera.lookAt( {0.7f, -0.6f, -0.9f}, {0.0f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f} );
     //  cornell 2
-    camera.lookAt( {-0.9f, 0.2f, 0.4f},
-                   {0.0f, -0.6f, 0.1f},
-                   {0.0f, 1.0f, 0.0f} );
+    //camera.lookAt( {-0.9f, 0.2f, 0.4f}, {0.0f, -0.6f, 0.1f}, {0.0f, 1.0f, 0.0f} );
     //  hub
     /*camera.lookAt( {-5.9f, 1.2f, -1.4f},
                    {0.0f, 2.2f, 0.1f},
@@ -117,7 +114,7 @@ int main(void) {
 
     keyboard.setKeyPressedFunction(sf::Keyboard::Space,
         std::bind(&render, std::ref(renderer), std::ref(camera), std::ref(scene),
-                  &light, std::ref(canvas),
+                  std::ref(canvas),
                   std::ref(r), std::ref(showRender), std::ref(filter)));
     keyboard.setKeyPressedFunction(sf::Keyboard::Return,
         std::bind(&toggleShowRender, std::ref(showRender)));

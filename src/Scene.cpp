@@ -148,10 +148,6 @@ void Scene::loadFromObj(const std::string& fileName) {
         triangles_.push_back({ &vertices_.at(ids[0]), &vertices_.at(ids[1]), &vertices_.at(ids[2]) });
 }
 
-/*void Scene::addLight(Light* light) {
-    lights_.push_back(std::unique_ptr<Light>(light));
-}*/
-
 Hit Scene::traceRay(Ray& ray) {
     //std::lock_guard<std::mutex> lock(triangleMutex_);
 
@@ -170,6 +166,10 @@ Hit Scene::traceRay(Ray& ray) {
 const std::vector<Triangle>& Scene::getTriangles(void) {
     std::lock_guard<std::mutex> lock(triangleMutex_);
     return triangles_;
+}
+
+const std::vector<std::unique_ptr<Light>>& Scene::getLights(void) {
+    return lights_;
 }
 
 
