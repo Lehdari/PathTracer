@@ -1,5 +1,7 @@
 #include "Renderer.hpp"
 
+#include <iostream> //TEMP
+
 
 namespace { //  some helper stuff
 
@@ -24,13 +26,15 @@ namespace { //  some helper stuff
     Vector3f cosineSample(std::default_random_engine& r) {
         float x = ((r() % 65536) / 32767.5f) - 1.0f;
         float y = ((r() % 65536) / 32767.5f) - 1.0f;
+        float a = x*x + y*y;
 
-        while (x*x + y*y > 1) {
+        while (a >= 1) {
             x = ((r() % 65536) / 32767.5f) - 1.0f;
             y = ((r() % 65536) / 32767.5f) - 1.0f;
+            a = x*x + y*y;
         }
 
-        return Vector3f{x, y, sqrtf(1 - x*x - y*y)};
+        return Vector3f{x, y, std::sqrt(1 - a)};
     }
 }
 
@@ -57,13 +61,23 @@ Vector3d Renderer::bounce(Scene& scene, Ray& ray,
         if (nBounces > 0) { //  recursive bounce
             leaving = -ray.d;
 
-            ray.d = formBasis(vh.n)*cosineSample(r);    //  cosine sampling for now
+            auto m = formBasis(vh.n);
+            auto cs = cosineSample(r);
+
+            ray.d = m*cs;    //  cosine sampling for now
             ray.o = vh.p + ray.d*RAY_EPS;
             ray.t = FLT_MAX;
 
             incoming = -ray.d;
 
             brdf = vh.n.dot(-incoming);
+
+            if (brdf != brdf) {
+                printf("\nincoming: %0.2f %0.2f %0.2f\n", incoming[0], incoming[1], incoming[2]);
+                std::cout << m;
+                std::cout << cs;
+            }
+
             if (brdf < 0.0f) brdf = 0.0f;
 
             lightOut = brdf * bounce(scene, ray, r, nBounces-1);
@@ -73,12 +87,16 @@ Vector3d Renderer::bounce(Scene& scene, Ray& ray,
         auto& lights = scene.getLights();
         for (auto& l : lights) {
             LightSample ls = l->drawSample(vh.p);
+
             float lt = ls.ray.t;
+            //if (lt < RAY_EPS) lt = RAY_EPS;
 
             scene.traceRay(ls.ray);
 
             if (ls.ray.t >= lt - RAY_EPS) {
                 float a = 1.0f / (ls.ray.t*ls.ray.t);
+                //if (a != a)
+                //    printf("\nasd\n");
 
                 brdf = vh.n.dot(-ls.ray.d);
                 if (brdf < 0.0f) brdf = 0.0f;

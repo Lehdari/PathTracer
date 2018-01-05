@@ -43,8 +43,8 @@ int main(void) {
     //  Light
     //  cornell
     //scene.addLight(PointLight({0.55f, -0.25f, -0.6f}, {1.2f, 1.15f, 1.0f}));
-    scene.addLight(PointLight({0.05f, -0.5f, 0.5f}, {0.1f, 0.3f, 0.5f}));
-    scene.addLight(PointLight({0.0f, 1.05f, 0.0f}, {1.3f, 1.0f, 0.8f}));
+    scene.addLight(PointLight({0.05f, -0.5f, 0.5f}, {0.1f, 0.2f, 0.4f}));
+    scene.addLight(PointLight({0.0f, 1.05f, 0.0f}, {1.3f, 0.9f, 0.5f}));
     //  hub
     //PointLight light({0.0f, 3.25f, -0.0f}, {1.2f, 1.15f, 1.0f});
 
@@ -52,6 +52,7 @@ int main(void) {
     BasicCamera camera(PI*0.5f, 4.0f/3.0f, 0.2f, 100.0f);
     //  cornell 1
     camera.lookAt( {0.7f, -0.6f, -0.9f}, {0.0f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f} );
+    //camera.lookAt( {0.6f, 0.6f, 0.3f}, {0.8f, 0.0f, 0.8f}, {0.0f, 1.0f, 0.0f} );
     //  cornell 2
     //camera.lookAt( {-0.9f, 0.2f, 0.4f}, {0.0f, -0.6f, 0.1f}, {0.0f, 1.0f, 0.0f} );
     //  hub
@@ -93,7 +94,7 @@ int main(void) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(quad), &quad[0], GL_STATIC_DRAW);
 
     //  Some other stuff
-    std::default_random_engine r(time(NULL));
+    std::default_random_engine r(715517);//time(NULL));
     float t = 0.0f;
     bool showRender = false;
 
