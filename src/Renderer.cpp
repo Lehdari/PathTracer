@@ -54,33 +54,21 @@ Vector3d Renderer::bounce(Scene& scene, Ray& ray,
 
         //  BRDF
         Vector3f leaving, incoming;
-        double brdf;
-        //double prob = 1.0f / PI;
-        double invProb = PI;
+        double incCos;  // cosine of ange between surface normal and incoming ray
 
         if (nBounces > 0) { //  recursive bounce
             leaving = -ray.d;
 
-            auto m = formBasis(vh.n);
-            auto cs = cosineSample(r);
-
-            ray.d = m*cs;    //  cosine sampling for now
+            ray.d = formBasis(vh.n)*cosineSample(r);    //  cosine sampling for now
             ray.o = vh.p + ray.d*RAY_EPS;
             ray.t = FLT_MAX;
 
             incoming = -ray.d;
 
-            brdf = vh.n.dot(-incoming);
+            incCos = vh.n.dot(-incoming);
 
-            if (brdf != brdf) {
-                printf("\nincoming: %0.2f %0.2f %0.2f\n", incoming[0], incoming[1], incoming[2]);
-                std::cout << m;
-                std::cout << cs;
-            }
-
-            if (brdf < 0.0f) brdf = 0.0f;
-
-            lightOut = brdf * bounce(scene, ray, r, nBounces-1);
+            if (incCos > 0.0f)
+                lightOut = /*incCos **/ PI * bounce(scene, ray, r, nBounces-1); // no angle cosine required when using cosine distribution
         }
 
         //  Shadow rays
@@ -89,19 +77,14 @@ Vector3d Renderer::bounce(Scene& scene, Ray& ray,
             LightSample ls = l->drawSample(vh.p);
 
             float lt = ls.ray.t;
-            //if (lt < RAY_EPS) lt = RAY_EPS;
-
             scene.traceRay(ls.ray);
 
             if (ls.ray.t >= lt - RAY_EPS) {
                 float a = 1.0f / (ls.ray.t*ls.ray.t);
-                //if (a != a)
-                //    printf("\nasd\n");
 
-                brdf = vh.n.dot(-ls.ray.d);
-                if (brdf < 0.0f) brdf = 0.0f;
-
-                lightOut += brdf * a * ls.col; //Vector3d{a*ls.col[0], a*ls.col[1], a*ls.col[2]};
+                incCos = vh.n.dot(-ls.ray.d);
+                if (incCos > 0.0f)
+                    lightOut += incCos * a * ls.col; //Vector3d{a*ls.col[0], a*ls.col[1], a*ls.col[2]};
             }
         }
     }
