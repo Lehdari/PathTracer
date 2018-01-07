@@ -38,21 +38,28 @@ int main(void) {
 
     //  Scene
     Scene scene;
-    scene.loadFromObj("res/scenes/cornell.obj");
+    scene.loadFromObj("res/scenes/cornell2.obj");
 
     //  Light
     //  cornell
     //scene.addLight(PointLight({0.55f, -0.25f, -0.6f}, {1.2f, 1.15f, 1.0f}));
-    scene.addLight(PointLight({0.05f, -0.5f, 0.5f}, {0.1f, 0.2f, 0.4f}));
-    scene.addLight(PointLight({0.0f, 1.05f, 0.0f}, {1.3f, 0.9f, 0.5f}));
+    float intensity1 = 2.0f;
+    float intensity2 = 0.5f;
+    float intensity3 = 0.65f;
+    scene.addLight(PointLight({0.0f, 1.05f, 0.0f},
+    {1.0f * intensity1, 0.9f * intensity1, 0.8f * intensity1}));
+    scene.addLight(PointLight({-0.15f, -0.5f, 0.5f},
+    {0.2f * intensity2, 0.5f * intensity2, 1.0f * intensity2}));
+    scene.addLight(PointLight({0.5f, -0.2f, -0.3f},
+    {0.3f * intensity3, 1.0f * intensity3, 0.1f * intensity3}));
     //  hub
     //PointLight light({0.0f, 3.25f, -0.0f}, {1.2f, 1.15f, 1.0f});
 
     //  Camera
     BasicCamera camera(PI*0.5f, 4.0f/3.0f, 0.2f, 100.0f);
     //  cornell 1
-    camera.lookAt( {0.7f, -0.6f, -0.9f}, {0.0f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f} );
-    //camera.lookAt( {0.6f, 0.6f, 0.3f}, {0.8f, 0.0f, 0.8f}, {0.0f, 1.0f, 0.0f} );
+    //camera.lookAt( {0.7f, -0.6f, -0.9f}, {0.05f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f} );
+    camera.lookAt( {0.05f, 0.8f, 0.95f}, {-0.1f, -0.2f, 0.0f}, {0.0f, 1.0f, 0.0f} );
     //  cornell 2
     //camera.lookAt( {-0.9f, 0.2f, 0.4f}, {0.0f, -0.6f, 0.1f}, {0.0f, 1.0f, 0.0f} );
     //  hub
@@ -64,14 +71,14 @@ int main(void) {
     Filter filter(Filter::TYPE_GAUSSIAN, 0.6f);
 
     //  Canvas
-    Canvas canvas(filter, 400, 300);
+    Canvas canvas(filter, 800/8, 600/8);
 
     //  Renderer
     Renderer renderer;
 
     //  Mesh
     Mesh mesh;
-    mesh.loadFromObj("res/scenes/cornell.obj");
+    mesh.loadFromObj("res/scenes/cornell2.obj");
 
     //  Shader
     Shader shader("res/shaders/VS_Simple.glsl", "res/shaders/FS_Simple.glsl");
@@ -178,6 +185,8 @@ int main(void) {
                            {0.0f, 1.0f, 0.0f} );*/
         }
         else {
+            //render(renderer, camera, scene, canvas, r, showRender, filter);
+
             glUseProgram(imgShader.getId());
 
             glBindBuffer(GL_ARRAY_BUFFER, quadVertexBuffer);
@@ -189,6 +198,8 @@ int main(void) {
             glDrawArrays(GL_TRIANGLES, 0, 6);
 
             glBindBuffer(GL_VERTEX_ARRAY, 0);
+
+            //saveRenderToFile(canvas, "render.png");
         }
 
         t += 1.0f/60.0f;
