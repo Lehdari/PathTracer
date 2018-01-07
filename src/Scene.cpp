@@ -6,9 +6,16 @@
 #include <iostream> //  TEMP
 
 
+Scene::Scene(void) :
+    bvh_    (triangles_, Bvh::METRIC_OBJECT_MEDIAN)
+{
+}
+
 Scene::Scene(const std::vector<Triangle>& triangles) :
-    triangles_(triangles)
-{}
+    triangles_  (triangles),
+    bvh_        (triangles_, Bvh::METRIC_OBJECT_MEDIAN)
+{
+}
 
 void Scene::loadFromObj(const std::string& fileName) {
     std::lock_guard<std::mutex> lock(triangleMutex_);
@@ -146,6 +153,9 @@ void Scene::loadFromObj(const std::string& fileName) {
     triangles_.reserve(indices.size());
     for (auto& ids : triangleVertexIds)
         triangles_.push_back({ &vertices_.at(ids[0]), &vertices_.at(ids[1]), &vertices_.at(ids[2]) });
+
+    //  build BVH
+    bvh_.build();
 }
 
 Hit Scene::traceRay(Ray& ray) {

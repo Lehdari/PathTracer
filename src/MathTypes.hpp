@@ -4,10 +4,10 @@
 
 #include <Eigen/Dense>
 #include <GL/glew.h>
+#include <float.h>
 
 
 #define PI 3.14159265358979323846
-#define FLT_MAX 3.40282347e+38F
 
 
 typedef Eigen::Matrix<float, 2, 1, Eigen::DontAlign> Vector2f;

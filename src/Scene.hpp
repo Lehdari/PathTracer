@@ -5,6 +5,7 @@
 #include "Triangle.hpp"
 #include "Ray.hpp"
 #include "Hit.hpp"
+#include "Bvh.hpp"
 #include "Light.hpp"
 
 #include <vector>
@@ -14,7 +15,7 @@
 
 class Scene {
 public:
-    Scene(void) {}
+    Scene(void);
     Scene(const std::vector<Triangle>& triangles);
 
     void loadFromObj(const std::string& fileName);
@@ -37,10 +38,14 @@ private:
     bool usingNormals_;
     bool usingIndexing_;
 
-    Hit intersectRay(Ray& ray, const Triangle& triangle) const;
+    //  BVH
+    Bvh bvh_;
 
     //  light data
     std::vector<std::unique_ptr<Light>>  lights_;
+
+
+    Hit intersectRay(Ray& ray, const Triangle& triangle) const;
 };
 
 
