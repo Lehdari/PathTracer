@@ -18,11 +18,11 @@ public:
 
     //  wrapper struct for triangle pointer and metadata
     struct Object {
-        const Triangle*   triangle;
-        uint64_t    triangleId;
-        Vector3f    min;
-        Vector3f    max;
-        Vector3f    middle;
+        const Triangle* triangle;
+        uint64_t        triangleId;
+        Vector3f        min;
+        Vector3f        max;
+        Vector3f        middle;
     };
 
 
@@ -33,6 +33,9 @@ public:
         void addTriangle(const std::vector<Triangle>& triangles, uint64_t id);
         void addObject(Object& object);
         void split(const Bvh::Metric& metric);
+        //  note: updates triangle ids, call updateTrianglePointers immediately after
+        void constructBalancedVector(std::vector<Triangle>& triangles);
+        void updateTrianglePointers(const std::vector<Triangle>& triangles);
 
     private:
         std::vector<Object>     objects_;

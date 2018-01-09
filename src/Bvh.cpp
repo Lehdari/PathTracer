@@ -37,6 +37,11 @@ void Bvh::build(void)
 
     root_.split(metric_);
 
+    auto newTriangles = triangles_;
+    root_.constructBalancedVector(newTriangles);
+    triangles_ = newTriangles;
+    root_.updateTrianglePointers(triangles_);
+
     printf("done.\n");
 }
 
@@ -92,15 +97,14 @@ void Bvh::Node::addObject(Object& object)
 
 void Bvh::Node::split(const Bvh::Metric& metric)
 {
-    printf("Splitting node...\n");
+    //  TEMP TODO remove
+    //printf("Splitting node...\n");
 
     auto n = objects_.size();
     auto h = n/2;
 
-    if (n < 2) {
-        printf("asd\n");
+    if (n < 2)
         return;
-    }
 
     switch (metric) {
     case Bvh::METRIC_OBJECT_MEDIAN: {
@@ -130,26 +134,27 @@ void Bvh::Node::split(const Bvh::Metric& metric)
             float a1 = surfaceArea(min1, max1);
             float a2 = surfaceArea(min2, max2);
 
-            printf("Child 1 [%d]:\n", i);
+            //  TEMP TODO remove
+            //printf("Child 1 [%d]:\n", i);
             //std::cout << min1.transpose() << std::endl;
             //std::cout << max1.transpose() << std::endl;
             //std::cout << s1.transpose() << std::endl;
-            printf("Surface area: %0.4f\n", a1);
+            //printf("Surface area: %0.4f\n", a1);
 
 
-            printf("Child 2 [%d]:\n", i);
+            //printf("Child 2 [%d]:\n", i);
             //std::cout << min2.transpose() << std::endl;
             //std::cout << max2.transpose() << std::endl;
             //std::cout << s2.transpose() << std::endl;
-            printf("Surface area: %0.4f\n", a2);
-            printf("Total surface area: %0.4f\n", a1+a2);
+            //printf("Surface area: %0.4f\n", a2);
+            //printf("Total surface area: %0.4f\n", a1+a2);
 
             area[i] = a1+a2;
             if (area[i] < area[minArea])
                 minArea = i;
         }
 
-        printf("minArea: %d\n", minArea);
+        //printf("minArea: %d\n", minArea);
 
         children_[0] = std::make_unique<Node>();
         children_[1] = std::make_unique<Node>();
@@ -171,4 +176,27 @@ void Bvh::Node::split(const Bvh::Metric& metric)
 
     children_[0]->split(metric);
     children_[1]->split(metric);
+}
+
+void Bvh::Node::constructBalancedVector(std::vector<Triangle>& triangles) {
+    for (auto& o : objects_) {
+        o.triangleId = triangles.size();
+        triangles.push_back(*o.triangle);
+    }
+
+    if (children_[0])
+        children_[0]->constructBalancedVector(triangles);
+    if (children_[1])
+        children_[1]->constructBalancedVector(triangles);
+}
+
+void Bvh::Node::updateTrianglePointers(const std::vector<Triangle>& triangles) {
+    for (auto& o : objects_) {
+        o.triangle = &triangles[o.triangleId];
+    }
+
+    if (children_[0])
+        children_[0]->updateTrianglePointers(triangles);
+    if (children_[1])
+        children_[1]->updateTrianglePointers(triangles);
 }
