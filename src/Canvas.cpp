@@ -34,13 +34,14 @@ const Texture& Canvas::getTexture(void) {
 
     if (pixDataDirty_) {
         auto ptr = pixelBuffer_.map(texture_.width()*texture_.height()*4*sizeof(unsigned char));
-        if(ptr) {
+
+        if(ptr != nullptr) {
             for (auto y=0u; y<height_; ++y) {
                 for (auto x=0u; x<width_; ++x) {
                     ptr[(y*width_ + x)*4 + 0] = (pixData_[y][x][0] / pixDataMax_)*255;
                     ptr[(y*width_ + x)*4 + 1] = (pixData_[y][x][1] / pixDataMax_)*255;
                     ptr[(y*width_ + x)*4 + 2] = (pixData_[y][x][2] / pixDataMax_)*255;
-                    ptr[(y*400 + x)*4 + 3] = 255;
+                    ptr[(y*width_ + x)*4 + 3] = 255;
                 }
             }
             pixelBuffer_.unmapAndUpdate(texture_);

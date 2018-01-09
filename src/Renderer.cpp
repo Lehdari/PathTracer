@@ -45,18 +45,45 @@ Renderer::~Renderer(void) {
 }
 
 Vector3d Renderer::bounce(Scene& scene, Ray& ray,
-                          std::default_random_engine& r, unsigned nBounces) const {
+                          std::default_random_engine& r,
+                          unsigned maxBounces, unsigned bounceId) const {
     Vector3d lightOut{0.0, 0.0, 0.0};
     Hit hit = scene.traceRay(ray);
 
     if (hit.triangle()) {
         Vertex vh = hit.getBarycentric();
 
-        //  BRDF
         Vector3f leaving, incoming;
-        double incCos;  // cosine of ange between surface normal and incoming ray
+        double cosTheta;  // cosine of ange between surface normal and incoming ray
+        double p;
+        Vector3d brdf(1.0/PI, 1.0/PI, 1.0/PI);
 
-        if (nBounces > 0) { //  recursive bounce
+        //  Shadow ray
+        auto& lights = scene.getLights();
+        auto nl = lights.size();
+        auto l = lights[r()%nl].get();
+        LightSample ls = l->drawSample(vh.p);
+
+        float lt = ls.ray.t;
+        scene.traceRay(ls.ray);
+
+        double tProb = 0.12;//0.01*bounceId;
+
+        if (ls.ray.t >= lt-RAY_EPS) {
+            float a = 1.0f/(ls.ray.t*ls.ray.t);
+
+            cosTheta = vh.n.dot(-ls.ray.d);
+            if (cosTheta > 0.0f) {
+                lightOut += cosTheta*brdf.cwiseProduct(a*ls.col)/nl;
+                tProb = 0.01;
+            }
+        }
+
+        //  reflection
+        //double tProb = 1.0-cosTheta;//0.5;
+        bool terminate = (r()%65536)*0.000015259021896696 < tProb;
+
+        if (!terminate && bounceId <= maxBounces) { //  recursive bounce
             leaving = -ray.d;
 
             ray.d = formBasis(vh.n)*cosineSample(r);    //  cosine sampling for now
@@ -65,27 +92,11 @@ Vector3d Renderer::bounce(Scene& scene, Ray& ray,
 
             incoming = -ray.d;
 
-            incCos = vh.n.dot(-incoming);
+            cosTheta = vh.n.dot(-incoming);
+            p = cosTheta/PI;
 
-            if (incCos > 0.0f)
-                lightOut = /*incCos **/ PI * bounce(scene, ray, r, nBounces-1); // no angle cosine required when using cosine distribution
-        }
-
-        //  Shadow rays
-        auto& lights = scene.getLights();
-        for (auto& l : lights) {
-            LightSample ls = l->drawSample(vh.p);
-
-            float lt = ls.ray.t;
-            scene.traceRay(ls.ray);
-
-            if (ls.ray.t >= lt - RAY_EPS) {
-                float a = 1.0f / (ls.ray.t*ls.ray.t);
-
-                incCos = vh.n.dot(-ls.ray.d);
-                if (incCos > 0.0f)
-                    lightOut += incCos * a * ls.col; //Vector3d{a*ls.col[0], a*ls.col[1], a*ls.col[2]};
-            }
+            if (cosTheta > 0.0f)
+                lightOut += 0.9 * cosTheta * brdf.cwiseProduct(bounce(scene, ray, r, maxBounces, bounceId+1)) / p / (1.0f-tProb);
         }
     }
 

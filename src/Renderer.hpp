@@ -34,7 +34,8 @@ protected:
                      std::default_random_engine& r,
                      unsigned xMin, unsigned xMax, unsigned yMin, unsigned yMax);
     Vector3d bounce(Scene& scene, Ray& ray,
-                    std::default_random_engine& r, unsigned nBounces = 0) const;
+                    std::default_random_engine& r,
+                    unsigned maxBounces, unsigned bounceId = 0) const;
 };
 
 
@@ -49,11 +50,11 @@ void Renderer::render(Camera<T_Camera>& camera, Scene& scene, Canvas& canvas,
     auto t1 = std::chrono::steady_clock::now();
 
     unsigned n = 0;
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (auto y=0u; y<viewH; ++y) {
         renderPatch(camera, scene, canvas, r, 0, viewW, y, y+1);
 
-        //#pragma omp critical
+        #pragma omp critical
         {
             ++n;
             printf("%u/%u\r", n, viewH);
@@ -96,7 +97,7 @@ void Renderer::renderPatch(Camera<T_Camera>& camera, Scene& scene, Canvas& canva
     unsigned viewW = canvas.getWidth();
     unsigned viewH = canvas.getHeight();
 
-    const unsigned nSamples = 16;
+    const unsigned nSamples = 4;
     Sampler sampler(Sampler::TYPE_JITTERED, nSamples);
     Ray ray;
 
@@ -108,7 +109,7 @@ void Renderer::renderPatch(Camera<T_Camera>& camera, Scene& scene, Canvas& canva
                 rayX += x;
                 rayY += y;
                 ray = camera.generateRay(rayX, rayY, viewW, viewH);
-                Vector3d pathLight = bounce(scene, ray, r, 3);
+                Vector3d pathLight = bounce(scene, ray, r, 120);
                 Sample s({rayX, rayY},
                          {pathLight[0], pathLight[1], pathLight[2]});
                 canvas.addSample(s);

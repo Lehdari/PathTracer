@@ -22,7 +22,7 @@ int main(void) {
     settings.antialiasingLevel = 8;  // Request 2 levels of antialiasing
     settings.majorVersion = 3;
     settings.minorVersion = 0;
-    sf::Window window(sf::VideoMode(800, 600, 32), "RayTracer", sf::Style::Default, settings);
+    sf::Window window(sf::VideoMode(800, 600, 32), "PathTracer", sf::Style::Default, settings);
     // Activate the window for OpenGL rendering
     window.setActive();
     // Limit the framerate to 60 frames per second (this step is optional)
@@ -43,7 +43,7 @@ int main(void) {
     //  Light
     //  cornell
     //scene.addLight(PointLight({0.55f, -0.25f, -0.6f}, {1.2f, 1.15f, 1.0f}));
-    float intensity1 = 2.0f;
+    float intensity1 = 1.2f;
     float intensity2 = 0.5f;
     float intensity3 = 0.65f;
     scene.addLight(PointLight({0.0f, 1.05f, 0.0f},
@@ -52,6 +52,7 @@ int main(void) {
     {0.2f * intensity2, 0.5f * intensity2, 1.0f * intensity2}));
     scene.addLight(PointLight({0.5f, -0.2f, -0.3f},
     {0.3f * intensity3, 1.0f * intensity3, 0.1f * intensity3}));
+
     //  hub
     //PointLight light({0.0f, 3.25f, -0.0f}, {1.2f, 1.15f, 1.0f});
 
@@ -71,7 +72,7 @@ int main(void) {
     Filter filter(Filter::TYPE_GAUSSIAN, 0.6f);
 
     //  Canvas
-    Canvas canvas(filter, 800/8, 600/8);
+    Canvas canvas(filter, 800/2, 600/2);
 
     //  Renderer
     Renderer renderer;
@@ -185,7 +186,7 @@ int main(void) {
                            {0.0f, 1.0f, 0.0f} );*/
         }
         else {
-            //render(renderer, camera, scene, canvas, r, showRender, filter);
+            render(renderer, camera, scene, canvas, r, showRender, filter);
 
             glUseProgram(imgShader.getId());
 
@@ -199,7 +200,7 @@ int main(void) {
 
             glBindBuffer(GL_VERTEX_ARRAY, 0);
 
-            //saveRenderToFile(canvas, "render.png");
+            saveRenderToFile(canvas, "render.png");
         }
 
         t += 1.0f/60.0f;
