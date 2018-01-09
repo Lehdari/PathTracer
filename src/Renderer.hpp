@@ -9,6 +9,7 @@
 #include "Sampler.hpp"
 
 #include <vector>
+#include <chrono>
 
 #define RAY_EPS 0.00001f
 
@@ -43,18 +44,26 @@ void Renderer::render(Camera<T_Camera>& camera, Scene& scene, Canvas& canvas,
     unsigned viewW = canvas.getWidth();
     unsigned viewH = canvas.getHeight();
 
-    printf("Rendering..\n");
+    printf("Rendering...\n");
+
+    auto t1 = std::chrono::steady_clock::now();
+
     unsigned n = 0;
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (auto y=0u; y<viewH; ++y) {
         renderPatch(camera, scene, canvas, r, 0, viewW, y, y+1);
 
-        #pragma omp critical
+        //#pragma omp critical
         {
             ++n;
             printf("%u/%u\r", n, viewH);
         }
     }
+
+    auto t2 = std::chrono::steady_clock::now();
+    auto dt = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+
+    printf("Finished in %0.3fs\n", dt.count());
 }
 
 /*template<typename T_Camera>
@@ -87,7 +96,7 @@ void Renderer::renderPatch(Camera<T_Camera>& camera, Scene& scene, Canvas& canva
     unsigned viewW = canvas.getWidth();
     unsigned viewH = canvas.getHeight();
 
-    const unsigned nSamples = 256;
+    const unsigned nSamples = 16;
     Sampler sampler(Sampler::TYPE_JITTERED, nSamples);
     Ray ray;
 

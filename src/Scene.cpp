@@ -163,12 +163,16 @@ Hit Scene::traceRay(Ray& ray) {
 
     Hit hit;
 
+    bvh_.traceRay(ray, hit);
+
+#if 0
     for (auto& tri : triangles_) {
-        Hit newHit = intersectRay(ray, tri);
+        Hit newHit = Hit::intersectRay(ray, tri);
 
         if (newHit.triangle())
             hit = newHit;
     }
+#endif
 
     return hit;
 }
@@ -180,55 +184,4 @@ const std::vector<Triangle>& Scene::getTriangles(void) {
 
 const std::vector<std::unique_ptr<Light>>& Scene::getLights(void) {
     return lights_;
-}
-
-
-Hit Scene::intersectRay(Ray& ray, const Triangle& triangle) const {
-    Hit hit;
-
-    float axrox = triangle.v[0]->p[0] - ray.o[0];
-    float ayroy = triangle.v[0]->p[1] - ray.o[1];
-    float azroz = triangle.v[0]->p[2] - ray.o[2];
-
-    float axbx = triangle.v[0]->p[0] - triangle.v[1]->p[0];
-    float ayby = triangle.v[0]->p[1] - triangle.v[1]->p[1];
-    float azbz = triangle.v[0]->p[2] - triangle.v[1]->p[2];
-
-    float axcx = triangle.v[0]->p[0] - triangle.v[2]->p[0];
-    float aycy = triangle.v[0]->p[1] - triangle.v[2]->p[1];
-    float azcz = triangle.v[0]->p[2] - triangle.v[2]->p[2];
-
-    Matrix3f mA;
-    mA <<       axbx,   axcx,   ray.d[0],
-                ayby,   aycy,   ray.d[1],
-                azbz,   azcz,   ray.d[2];
-    float aDet = mA.determinant();
-
-    Matrix3f mBeta;
-    mBeta <<    axrox,  axcx,   ray.d[0],
-                ayroy,  aycy,   ray.d[1],
-                azroz,  azcz,   ray.d[2];
-
-    Matrix3f mGamma;
-    mGamma <<   axbx,   axrox,  ray.d[0],
-                ayby,   ayroy,  ray.d[1],
-                azbz,   azroz,  ray.d[2];
-
-    float beta =  mBeta.determinant() / aDet;
-    float gamma = mGamma.determinant() / aDet;
-
-    if (beta > 0.0f && gamma > 0.0f && beta+gamma < 1.0f) {
-        Matrix3f mT;
-        mT <<       axbx,   axcx,   axrox,
-                    ayby,   aycy,   ayroy,
-                    azbz,   azcz,   azroz;
-        float t = mT.determinant() / aDet;
-
-        if (t > 0.0f && t < ray.t) {
-            ray.t = t;
-            hit.set(&triangle, beta, gamma);
-        }
-    }
-
-    return hit;
 }

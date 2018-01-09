@@ -3,6 +3,8 @@
 
 
 #include "Triangle.hpp"
+#include "Ray.hpp"
+#include "Hit.hpp"
 
 #include <vector>
 #include <memory>
@@ -37,6 +39,8 @@ public:
         void constructBalancedVector(std::vector<Triangle>& triangles);
         void updateTrianglePointers(const std::vector<Triangle>& triangles);
 
+        void traceRay(Ray& ray, Hit& hit);
+
     private:
         std::vector<Object>     objects_;
         std::unique_ptr<Node>   children_[2];
@@ -50,6 +54,8 @@ public:
         const Metric& metric = METRIC_UNKNOWN);
 
     void build(void);
+
+    void traceRay(Ray& ray, Hit& hit);
 
 private:
     std::vector<Triangle>&  triangles_;

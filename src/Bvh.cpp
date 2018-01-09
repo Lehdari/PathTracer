@@ -39,11 +39,17 @@ void Bvh::build(void)
 
     auto newTriangles = triangles_;
     root_.constructBalancedVector(newTriangles);
-    triangles_ = newTriangles;
+    std::swap(triangles_, newTriangles);
     root_.updateTrianglePointers(triangles_);
 
     printf("done.\n");
 }
+
+void Bvh::traceRay(Ray& ray, Hit& hit)
+{
+    root_.traceRay(ray, hit);
+}
+
 
 Bvh::Node::Node(void) :
     min_(FLT_MAX, FLT_MAX, FLT_MAX),
@@ -199,4 +205,50 @@ void Bvh::Node::updateTrianglePointers(const std::vector<Triangle>& triangles) {
         children_[0]->updateTrianglePointers(triangles);
     if (children_[1])
         children_[1]->updateTrianglePointers(triangles);
+}
+
+void Bvh::Node::traceRay(Ray& ray, Hit& hit)
+{
+    //  check ray collision with node
+    Vector3f t1;
+    Vector3f t2;
+
+    float tStart = -FLT_MAX;
+    float tEnd = FLT_MAX;
+
+    t1 = (min_ - ray.o).cwiseProduct(ray.d.cwiseInverse());
+    t2 = (max_ - ray.o).cwiseProduct(ray.d.cwiseInverse());
+
+    for (auto i=0; i<3; ++i) {
+        if (t1(i) > t2(i)) {
+            float tmp = t2(i);
+            t2(i) = t1(i);
+            t1(i) = tmp;
+        }
+
+        if (t1(i) > tStart) tStart = t1(i);
+        if (t2(i) < tEnd) tEnd = t2(i);
+    }
+
+    if (tStart > tEnd || tEnd < 0.0f)
+        return;
+/*
+    if (tStart > 0.0f) {
+        //  closest intersection at tStart
+    }
+    else {
+        //  closest intersection at tEnd
+    }
+*/
+    for (auto& o : objects_) {
+        Hit newHit = Hit::intersectRay(ray, *o.triangle);
+
+        if (newHit.triangle())
+            hit = newHit;
+    }
+
+    if (children_[0])
+        children_[0]->traceRay(ray, hit);
+    if (children_[1])
+        children_[1]->traceRay(ray, hit);
 }

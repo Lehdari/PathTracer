@@ -30,9 +30,9 @@ public:
 
 private:
     //  triangle data
-    std::vector<Triangle> triangles_;
-    std::vector<Vertex> vertices_;
-    std::mutex triangleMutex_;
+    std::vector<Triangle>   triangles_;
+    std::vector<Vertex>     vertices_;
+    std::mutex              triangleMutex_;
 
     bool usingTexCoords_;
     bool usingNormals_;
@@ -43,9 +43,6 @@ private:
 
     //  light data
     std::vector<std::unique_ptr<Light>>  lights_;
-
-
-    Hit intersectRay(Ray& ray, const Triangle& triangle) const;
 };
 
 

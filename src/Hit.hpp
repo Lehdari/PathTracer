@@ -3,6 +3,7 @@
 
 
 #include "Triangle.hpp"
+#include "Ray.hpp"
 
 
 class Hit {
@@ -17,6 +18,9 @@ public:
     float gamma(void) const;
 
     const Vertex& getBarycentric(void) const;
+
+
+    static Hit intersectRay(Ray& ray, const Triangle& triangle);
 
 private:
     const Triangle* triangle_;
