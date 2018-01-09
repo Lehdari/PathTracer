@@ -18,7 +18,8 @@ public:
 
     //  wrapper struct for triangle pointer and metadata
     struct Object {
-        Triangle*   triangle;
+        const Triangle*   triangle;
+        uint64_t    triangleId;
         Vector3f    min;
         Vector3f    max;
         Vector3f    middle;
@@ -29,7 +30,7 @@ public:
     public:
         Node(void);
 
-        void addTriangle(Triangle& triangle);
+        void addTriangle(const std::vector<Triangle>& triangles, uint64_t id);
         void addObject(Object& object);
         void split(const Bvh::Metric& metric);
 

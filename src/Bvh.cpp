@@ -1,8 +1,21 @@
 #include "Bvh.hpp"
 
+#include <iostream> //  TEMP
+
 
 #define MIN(A, B, C) std::min(A, std::min(B, C))
 #define MAX(A, B, C) std::max(A, std::max(B, C))
+
+
+namespace {
+
+    inline float surfaceArea(const Vector3f& min, const Vector3f& max)
+    {
+        auto d = max-min;
+        return 2.0f * (d(0)*d(1) + d(0)*d(2) + d(1)*d(2));
+    }
+
+}
 
 
 Bvh::Bvh(std::vector<Triangle>& triangles, const Metric& metric) :
@@ -19,9 +32,8 @@ void Bvh::build(void)
 {
     printf("Building BVH...\n");
 
-    for (auto& t : triangles_) {
-        root_.addTriangle(t);
-    }
+    for (auto i=0llu; i<triangles_.size(); ++i)
+        root_.addTriangle(triangles_, i);
 
     root_.split(metric_);
 
@@ -30,15 +42,17 @@ void Bvh::build(void)
 
 Bvh::Node::Node(void) :
     min_(FLT_MAX, FLT_MAX, FLT_MAX),
-    max_(FLT_MIN, FLT_MIN, FLT_MIN)
+    max_(-FLT_MAX, -FLT_MAX, -FLT_MAX)
 {
 }
 
-void Bvh::Node::addTriangle(Triangle& triangle)
+void Bvh::Node::addTriangle(const std::vector<Triangle>& triangles, uint64_t id)
 {
+    auto& triangle = triangles[id];
     objects_.emplace_back();
     auto& o = objects_.back();
     o.triangle = &triangle;
+    o.triangleId = id;
 
     auto& v1 = triangle.v[0]->p;
     auto& v2 = triangle.v[1]->p;
@@ -90,19 +104,61 @@ void Bvh::Node::split(const Bvh::Metric& metric)
 
     switch (metric) {
     case Bvh::METRIC_OBJECT_MEDIAN: {
-        //  sort along x using middle point
-        std::sort(objects_.begin(), objects_.end(), [](const Object& o1, const Object& o2) {
-            return o1.middle(0) < o2.middle(0);
-        });
+        std::vector<Object> oTemp[3] = {objects_, objects_, objects_};
+        Node n1[3], n2[3];
+        float area[3] = {0.0f};
+        int minArea = 0;
+
+        for (auto i=0; i<3; ++i) {
+            std::sort(oTemp[i].begin(), oTemp[i].end(), [&i](const Object& o1, const Object& o2) -> bool {
+                return o1.middle(i) < o2.middle(i);
+            });
+
+            for (decltype(n) j = 0; j < h; ++j)
+                n1[i].addObject(oTemp[i][j]);
+            for (decltype(n) j = h; j < n; ++j)
+                n2[i].addObject(oTemp[i][j]);
+
+            auto min1 = n1[i].min_;
+            auto max1 = n1[i].max_;
+            auto min2 = n2[i].min_;
+            auto max2 = n2[i].max_;
+
+            auto s1 = max1-min1;
+            auto s2 = max2-min2;
+
+            float a1 = surfaceArea(min1, max1);
+            float a2 = surfaceArea(min2, max2);
+
+            printf("Child 1 [%d]:\n", i);
+            //std::cout << min1.transpose() << std::endl;
+            //std::cout << max1.transpose() << std::endl;
+            //std::cout << s1.transpose() << std::endl;
+            printf("Surface area: %0.4f\n", a1);
+
+
+            printf("Child 2 [%d]:\n", i);
+            //std::cout << min2.transpose() << std::endl;
+            //std::cout << max2.transpose() << std::endl;
+            //std::cout << s2.transpose() << std::endl;
+            printf("Surface area: %0.4f\n", a2);
+            printf("Total surface area: %0.4f\n", a1+a2);
+
+            area[i] = a1+a2;
+            if (area[i] < area[minArea])
+                minArea = i;
+        }
+
+        printf("minArea: %d\n", minArea);
 
         children_[0] = std::make_unique<Node>();
         children_[1] = std::make_unique<Node>();
 
-        for (decltype(n) i=0; i<h; ++i)
-            children_[0]->addObject(objects_[i]);
+        for (decltype(n) i = 0; i < h; ++i)
+            children_[0]->addObject(oTemp[minArea][i]);
 
-        for (decltype(n) i=h; i<n; ++i)
-            children_[1]->addObject(objects_[i]);
+        for (decltype(n) i = h; i < n; ++i)
+            children_[1]->addObject(oTemp[minArea][i]);
 
         objects_.clear();
 

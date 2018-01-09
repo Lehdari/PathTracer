@@ -45,11 +45,11 @@ void Renderer::render(Camera<T_Camera>& camera, Scene& scene, Canvas& canvas,
 
     printf("Rendering..\n");
     unsigned n = 0;
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (auto y=0u; y<viewH; ++y) {
         renderPatch(camera, scene, canvas, r, 0, viewW, y, y+1);
 
-        //#pragma omp critical
+        #pragma omp critical
         {
             ++n;
             printf("%u/%u\r", n, viewH);
@@ -87,7 +87,7 @@ void Renderer::renderPatch(Camera<T_Camera>& camera, Scene& scene, Canvas& canva
     unsigned viewW = canvas.getWidth();
     unsigned viewH = canvas.getHeight();
 
-    const unsigned nSamples = 16;
+    const unsigned nSamples = 256;
     Sampler sampler(Sampler::TYPE_JITTERED, nSamples);
     Ray ray;
 
@@ -99,7 +99,7 @@ void Renderer::renderPatch(Camera<T_Camera>& camera, Scene& scene, Canvas& canva
                 rayX += x;
                 rayY += y;
                 ray = camera.generateRay(rayX, rayY, viewW, viewH);
-                Vector3d pathLight = bounce(scene, ray, r, 2);
+                Vector3d pathLight = bounce(scene, ray, r, 3);
                 Sample s({rayX, rayY},
                          {pathLight[0], pathLight[1], pathLight[2]});
                 canvas.addSample(s);
